@@ -36,9 +36,14 @@ STOPWORDS = set("""
 的 了 是 在 我 有 和 就 不 人 都 一 一个 上 也 很 到 说 要 去 你 会 着 没有 看 好 自己 这 那 它 我们 他们 她们 什么 怎么 为什么 因为 所以 但是 而且 如果 然后 可以 应该 需要 这个 那个 这些 那些 以及 与 或 等 并 被 把 让 从 对 于 之 中 为 而 及 又 亦 更 还 已经 正在 一直 不是 只是 就是 还是 但是 却 但是 如果 那么 这 个 里 呢 吧 啊 呀 吗
 """.split())
 
-# 英文停用词（常用词）
+# 英文停用词（常见虚词：冠词、介词、连词、代词、助动词等）
 ENGLISH_STOPWORDS = set("""
-the a an and or but if then else of to in on at for with by from is are was were be been being it its this that these those as not no yes
+the a an and or but if then else of to in on at for with by from is are was were be been being
+it its this that these those as not no yes i you he she we they them their his her my your our
+me him us who what which when where why how all any both each few more most other some such
+only own same so than too very can will just should now also do does did have has had may might
+must shall would could into upon within without between among through during about above below
+under over after before while until against because therefore however although though since
 """.split())
 
 # 全部停用词合并
@@ -59,7 +64,7 @@ def tokenize(text):
     words = jieba.lcut(text)
     result = []
     for w in words:
-        w = w.strip()
+        w = w.strip().lower()  # 英文转小写（The 和 the 算同一个词）；中文不受影响
         # 过滤：太短的词、纯标点、纯数字、停用词
         if len(w) < 2:
             continue
