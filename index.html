@@ -1,0 +1,2279 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌳 DH 学习体系 · Youcy</title>
+<style>
+  :root {
+    --bg: #faf9f6; --sidebar-bg: #f0ede7; --text: #2c2416;
+    --text-secondary: #6b5e4a; --border: #d4c9b5; --accent: #8b5e3c;
+    --accent-light: #f0e6d8; --hover: #e8e0d3; --card-bg: #ffffff;
+    --tag-bg: #f5f0e8; --success: #5a7d5a; --warning: #b8860b;
+    --info: #60759a; --radius: 8px; --shadow: 0 1px 3px rgba(0,0,0,0.06);
+    --transition: 0.2s ease;
+    --highlight-yellow: #fef3b4; --highlight-yellow-dark: #d4b84a;
+    --underline-color: #4a90d9; --underline-hover: #2563a0;
+    --drawer-bg: #fdfcfa;
+  }
+  [data-theme="dark"] {
+    --bg: #1e1b18; --sidebar-bg: #25221e; --text: #e8e0d3;
+    --text-secondary: #9b8e7a; --border: #3d3529; --accent: #c49464;
+    --accent-light: #2d261d; --hover: #2d2820; --card-bg: #282420;
+    --tag-bg: #2d2820; --success: #6b9b6b; --warning: #c4942e;
+    --info: #7b8fb5;
+    --highlight-yellow: #5a4e1a; --highlight-yellow-dark: #a8942e;
+    --underline-color: #6098d9; --underline-hover: #8ab4e8;
+    --drawer-bg: #25221e;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; line-height: 1.6; }
+
+  /* ── SIDEBAR ── */
+  #sidebar { width: 340px; min-width: 340px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+  #sidebar-header { padding: 16px 16px 12px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--sidebar-bg); z-index: 10; }
+  #sidebar-header h1 { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  #search-box { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--card-bg); color: var(--text); font-size: 0.85rem; outline: none; transition: var(--transition); }
+  #search-box:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+  #tree-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
+
+  .tree-branch { user-select: none; }
+  .tree-branch-header { display: flex; align-items: center; gap: 6px; padding: 6px 12px; cursor: pointer; border-radius: 6px; margin: 1px 8px; transition: var(--transition); font-size: 0.88rem; font-weight: 600; }
+  .tree-branch-header:hover { background: var(--hover); }
+  .tree-branch-header .arrow { font-size: 0.6rem; width: 14px; text-align: center; transition: transform 0.15s ease; flex-shrink: 0; }
+  .tree-branch.open > .tree-branch-header .arrow { transform: rotate(90deg); }
+  .tree-branch-header .icon { flex-shrink: 0; font-size: 1rem; }
+  .tree-branch-header .label { flex: 1; }
+  .tree-children { display: none; padding-left: 8px; }
+  .tree-branch.open > .tree-children { display: block; }
+
+  .tree-leaf { display: flex; align-items: center; gap: 6px; padding: 5px 12px 5px 28px; cursor: pointer; border-radius: 6px; margin: 1px 8px; font-size: 0.83rem; transition: var(--transition); color: var(--text-secondary); }
+  .tree-leaf:hover { background: var(--hover); color: var(--text); }
+  .tree-leaf.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+  .tree-leaf .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: var(--border); }
+  .tree-leaf .status-dot.done { background: var(--success); }
+  .tree-leaf .status-dot.progress { background: var(--warning); }
+  .highlight-match { background: #ffeaa7; border-radius: 2px; padding: 0 1px; }
+
+  #mode-tabs { display: flex; gap: 4px; padding: 8px 12px; border-top: 1px solid var(--border); }
+  #mode-tabs button { flex: 1; padding: 6px 4px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--text-secondary); font-size: 0.78rem; cursor: pointer; transition: var(--transition); }
+  #mode-tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #mode-tabs button:hover:not(.active) { background: var(--hover); }
+
+  /* ── MAIN ── */
+  #main-wrapper { flex: 1; display: flex; overflow: hidden; position: relative; }
+  #main { flex: 1; overflow-y: auto; padding: 32px 40px; max-width: 780px; }
+  #breadcrumb { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px; }
+  #content h2 { font-size: 1.5rem; margin-bottom: 16px; color: var(--accent); }
+  #content h3 { font-size: 1.1rem; margin: 20px 0 8px; }
+  #content p { margin-bottom: 12px; color: var(--text-secondary); }
+  #content ul, #content ol { margin: 0 0 16px 20px; color: var(--text-secondary); }
+  #content li { margin-bottom: 4px; }
+  #content a { color: var(--accent); text-decoration: underline; }
+  #content a:hover { opacity: 0.8; }
+
+  /* ── Highlights & Underlines (user annotations) ── */
+  .user-highlight {
+    background: var(--highlight-yellow);
+    border-radius: 2px; padding: 0 1px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    position: relative;
+  }
+  .user-highlight:hover { background: var(--highlight-yellow-dark); }
+  .user-highlight.active-note { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 3px; }
+
+  .user-underline {
+    text-decoration: underline;
+    text-decoration-color: var(--underline-color);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .user-underline:hover { text-decoration-color: var(--underline-hover); color: var(--underline-hover); }
+
+  /* ── Color & Bold Annotations ── */
+  .user-color-red { color: #c0392b; }
+  .user-color-blue { color: #2471a3; }
+  .user-color-green { color: #1e8449; }
+  .user-color-orange { color: #d35400; }
+  .user-color-purple { color: #7d3c98; }
+  .user-bold { font-weight: 700; }
+  [data-theme="dark"] .user-color-red { color: #e74c3c; }
+  [data-theme="dark"] .user-color-blue { color: #5dade2; }
+  [data-theme="dark"] .user-color-green { color: #52be80; }
+  [data-theme="dark"] .user-color-orange { color: #e67e22; }
+  [data-theme="dark"] .user-color-purple { color: #af7ac5; }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .card h4 { margin-bottom: 8px; font-size: 0.95rem; }
+  .tag { display: inline-block; padding: 2px 8px; background: var(--tag-bg); border-radius: 12px; font-size: 0.75rem; margin: 2px; cursor: pointer; transition: var(--transition); }
+  .tag:hover { background: var(--accent); color: #fff; }
+  .tag.related { border: 1px dashed var(--accent); }
+  .cross-link { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; margin: 2px; background: var(--accent-light); border-radius: 14px; font-size: 0.8rem; cursor: pointer; transition: var(--transition); text-decoration: none; color: var(--accent); border: 1px solid transparent; }
+  .cross-link:hover { border-color: var(--accent); }
+
+  /* ── CONTEXT MENU ── */
+  #ctx-menu {
+    display: none; position: fixed; z-index: 9999;
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    min-width: 170px; overflow: hidden; padding: 4px 0;
+  }
+  #ctx-menu .ctx-item {
+    padding: 9px 16px; cursor: pointer; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 8px;
+    transition: background 0.1s ease;
+    color: var(--text);
+  }
+  #ctx-menu .ctx-item:hover { background: var(--hover); }
+  #ctx-menu .ctx-item .ctx-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+  #ctx-menu .ctx-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* ── LINK DIALOG ── */
+  #link-dialog-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 10000; justify-content: center; align-items: center; }
+  #link-dialog-overlay.show { display: flex; }
+  #link-dialog {
+    background: var(--card-bg); border-radius: 12px; padding: 24px;
+    width: 440px; max-width: 90vw; box-shadow: 0 16px 48px rgba(0,0,0,0.25);
+  }
+  #link-dialog h3 { margin-bottom: 16px; font-size: 1rem; }
+  #link-dialog .selected-preview { padding: 8px 12px; background: var(--highlight-yellow); border-radius: 6px; margin-bottom: 16px; font-size: 0.85rem; word-break: break-all; }
+  #link-dialog label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px; color: var(--text-secondary); }
+  #link-dialog input, #link-dialog textarea { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 12px; font-size: 0.85rem; background: var(--bg); color: var(--text); font-family: inherit; resize: vertical; }
+  #link-dialog input:focus, #link-dialog textarea:focus { outline: none; border-color: var(--accent); }
+  #link-dialog .dialog-btns { display: flex; gap: 8px; justify-content: flex-end; }
+  #link-dialog .dialog-btns button { padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; font-size: 0.85rem; background: var(--card-bg); color: var(--text); }
+  #link-dialog .dialog-btns button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ── ANNOTATION DRAWER ── */
+  #anno-drawer {
+    width: 0; overflow: hidden; background: var(--drawer-bg);
+    border-left: 1px solid var(--border);
+    transition: width 0.25s ease;
+    display: flex; flex-direction: column;
+  }
+  #anno-drawer.open { width: 320px; min-width: 320px; }
+  #anno-drawer-header {
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    font-weight: 600; font-size: 0.9rem;
+  }
+  #anno-drawer-close {
+    background: none; border: none; font-size: 1.2rem; cursor: pointer;
+    color: var(--text-secondary); padding: 2px 6px; border-radius: 4px;
+  }
+  #anno-drawer-close:hover { background: var(--hover); }
+  #anno-drawer-body { flex: 1; overflow-y: auto; padding: 16px; }
+  #anno-drawer-body .anno-quote {
+    padding: 10px 14px; background: var(--highlight-yellow); border-radius: 8px;
+    margin-bottom: 16px; font-size: 0.88rem; line-height: 1.6; font-style: italic;
+    border-left: 3px solid var(--highlight-yellow-dark);
+  }
+  #anno-drawer-body textarea {
+    width: 100%; min-height: 180px; padding: 10px 14px;
+    border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.85rem; line-height: 1.6; font-family: inherit;
+    background: var(--bg); color: var(--text); resize: vertical;
+  }
+  #anno-drawer-body textarea:focus { outline: none; border-color: var(--accent); }
+  #anno-drawer-body .anno-meta { font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; }
+
+  /* ── Note Editor ── */
+  #note-editor-toolbar {
+    display: flex; gap: 2px; margin-bottom: 6px; flex-wrap: wrap;
+    padding: 4px 6px; background: var(--tag-bg); border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  #note-editor-toolbar button {
+    width: 28px; height: 26px; border: 1px solid transparent;
+    border-radius: 4px; background: transparent; cursor: pointer;
+    font-size: 0.8rem; display: flex; align-items: center; justify-content: center;
+    transition: var(--transition); color: var(--text);
+  }
+  #note-editor-toolbar button:hover { background: var(--hover); border-color: var(--border); }
+  #note-editor-toolbar button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #note-editor-toolbar .toolbar-divider { width: 1px; background: var(--border); margin: 2px 4px; }
+  #note-editor {
+    width: 100%; min-height: 180px; padding: 10px 14px;
+    border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.85rem; line-height: 1.6; font-family: inherit;
+    background: var(--bg); color: var(--text);
+    overflow-y: auto; outline: none;
+  }
+  #note-editor:focus { border-color: var(--accent); }
+  #note-editor:empty::before {
+    content: attr(placeholder); color: #999; pointer-events: none;
+  }
+
+  /* ── Note Context Menu ── */
+  #note-ctx-menu {
+    display: none; position: fixed; z-index: 10001;
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    min-width: 150px; overflow: hidden; padding: 4px 0;
+  }
+  #note-ctx-menu .nctx-item {
+    padding: 7px 14px; cursor: pointer; font-size: 0.82rem;
+    display: flex; align-items: center; gap: 6px;
+    transition: background 0.1s ease; color: var(--text);
+  }
+  #note-ctx-menu .nctx-item:hover { background: var(--hover); }
+  #note-ctx-menu .nctx-divider { height: 1px; background: var(--border); margin: 3px 0; }
+
+  #anno-drawer-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+  #anno-drawer-footer button { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; font-size: 0.82rem; background: var(--card-bg); color: var(--text); }
+  #anno-drawer-footer button.danger { color: #c0392b; border-color: #e0c0c0; }
+  #anno-drawer-footer button.danger:hover { background: #fdf0f0; }
+  #anno-drawer-footer button.save-btn { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #anno-drawer-footer button.save-btn:hover { opacity: 0.9; }
+
+  /* empty drawer */
+  #anno-drawer .empty-drawer { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+  #anno-drawer .empty-drawer .big-icon { font-size: 2.5rem; margin-bottom: 8px; }
+
+  /* Underline tooltip on hover */
+  .underline-tooltip {
+    position: absolute; background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 10px; font-size: 0.78rem; box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    z-index: 999; pointer-events: none; max-width: 280px;
+    color: var(--text-secondary);
+  }
+
+  /* ── Skills ── */
+  #skills-panel { display: none; }
+  #skills-panel.visible { display: block; }
+  .skill-group { margin-bottom: 24px; }
+  .skill-group h3 { font-size: 1rem; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid var(--accent); display: flex; align-items: center; gap: 8px; }
+  .skill-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; margin: 4px 0; background: var(--card-bg); border-radius: 6px; border: 1px solid var(--border); transition: var(--transition); cursor: pointer; }
+  .skill-item:hover { border-color: var(--accent); }
+  .skill-item .check-box { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: var(--transition); font-size: 0.7rem; }
+  .skill-item.checked .check-box { background: var(--success); border-color: var(--success); color: #fff; }
+  .skill-item.checked .skill-name { text-decoration: line-through; opacity: 0.6; }
+  .skill-name { flex: 1; font-size: 0.88rem; }
+  .skill-level { font-size: 0.72rem; padding: 2px 6px; border-radius: 10px; background: var(--tag-bg); }
+  .skill-level.lv1 { color: #9b6b6b; } .skill-level.lv2 { color: #b8860b; } .skill-level.lv3 { color: #6b7b9b; } .skill-level.lv4 { color: #5a7d5a; } .skill-level.lv5 { color: #8b5e3c; font-weight: 700; }
+  .progress-bar-bg { height: 6px; background: var(--border); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s ease; }
+  .progress-stat { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .progress-stat .stat { background: var(--card-bg); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--border); text-align: center; min-width: 80px; }
+  .progress-stat .stat .num { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+  .progress-stat .stat .lbl { font-size: 0.75rem; color: var(--text-secondary); }
+  #review-nudge { background: var(--accent-light); border-radius: var(--radius); padding: 12px 16px; margin: 16px 0; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+
+  /* ── Top bar ── */
+  #top-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  #top-bar button { padding: 6px 14px; border: 1px solid var(--border); border-radius: 16px; background: var(--card-bg); color: var(--text-secondary); cursor: pointer; font-size: 0.8rem; transition: var(--transition); }
+  #top-bar button:hover { border-color: var(--accent); color: var(--accent); }
+  #theme-toggle { font-size: 1.1rem; padding: 4px 8px; }
+  #anno-count { font-size: 0.75rem; color: var(--text-secondary); margin-left: auto; display: flex; align-items: center; gap: 4px; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+  .empty-state .big-icon { font-size: 4rem; margin-bottom: 12px; }
+  .fade-in { animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+
+  /* Toast */
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 20px; border-radius: 20px; font-size: 0.85rem; z-index: 10001; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+  #toast.show { opacity: 1; }
+
+  /* ── Mini Chat Widget ── */
+  #mc-trigger {
+    position: fixed; top: 16px; right: 16px; z-index: 9998;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--accent); color: #fff; border: none;
+    font-size: 1.3rem; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #mc-trigger:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+  #mc-trigger:active { transform: scale(0.95); }
+
+  #mc-panel {
+    position: fixed; top: 68px; right: 16px; z-index: 9997;
+    width: 380px; height: 500px;
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    display: none; flex-direction: column; overflow: hidden;
+  }
+  #mc-panel.open { display: flex; }
+
+  /* Tabs */
+  #mc-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  #mc-tabs button {
+    flex: 1; padding: 8px; border: none; background: transparent;
+    color: var(--text-secondary); font-size: 0.8rem; cursor: pointer;
+    transition: var(--transition); font-family: inherit;
+    border-bottom: 2px solid transparent;
+  }
+  #mc-tabs button.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  #mc-tabs button:hover:not(.active) { background: var(--hover); }
+
+  /* Chat tab */
+  #mc-chat { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+  #mc-chat.active { display: flex; }
+  #mc-messages {
+    flex: 1; overflow-y: auto; padding: 12px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .mc-msg {
+    max-width: 88%; padding: 10px 14px; border-radius: 16px;
+    font-size: 0.82rem; line-height: 1.55; word-break: break-word;
+    animation: msgIn 0.25s ease;
+  }
+  @keyframes msgIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .mc-msg.user {
+    align-self: flex-end; background: var(--accent); color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .mc-msg.assistant {
+    align-self: flex-start; background: var(--tag-bg); color: var(--text);
+    border-bottom-left-radius: 4px;
+  }
+  .mc-msg.assistant a { color: var(--accent); }
+  .mc-msg.assistant code {
+    background: var(--card-bg); padding: 1px 5px; border-radius: 3px;
+    font-size: 0.8rem;
+  }
+  #mc-chat-input-wrap {
+    display: flex; padding: 8px 10px; border-top: 1px solid var(--border); gap: 6px;
+    flex-shrink: 0;
+  }
+  #mc-chat-input {
+    flex: 1; padding: 8px 12px; border: 1px solid var(--border);
+    border-radius: 20px; font-size: 0.83rem;
+    background: var(--bg); color: var(--text); outline: none;
+    font-family: inherit;
+  }
+  #mc-chat-input:focus { border-color: var(--accent); }
+  #mc-chat-send {
+    width: 36px; height: 36px; border-radius: 50%; border: none;
+    background: var(--accent); color: #fff; cursor: pointer;
+    font-size: 1rem; flex-shrink: 0;
+  }
+  #mc-chat-send:hover { opacity: 0.85; }
+  #mc-chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Search tab */
+  #mc-search { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+  #mc-search.active { display: flex; }
+  #mc-search-input-wrap {
+    display: flex; padding: 8px 10px; border-bottom: 1px solid var(--border); gap: 4px;
+    flex-shrink: 0;
+  }
+  #mc-search-input {
+    flex: 1; padding: 8px 12px; border: 1px solid var(--border);
+    border-radius: 20px; font-size: 0.83rem;
+    background: var(--bg); color: var(--text); outline: none;
+    font-family: inherit;
+  }
+  #mc-search-input:focus { border-color: var(--accent); }
+  #mc-search-btn {
+    padding: 8px 14px; border-radius: 20px; border: none;
+    background: var(--accent); color: #fff; cursor: pointer; font-size: 0.82rem;
+  }
+  #mc-search-results { flex: 1; overflow-y: auto; padding: 4px 0; font-size: 0.8rem; }
+  #mc-search-results .mc-empty {
+    text-align: center; padding: 24px 16px; color: var(--text-secondary); font-size: 0.8rem;
+  }
+  .mc-search-item {
+    padding: 8px 14px; cursor: pointer; transition: var(--transition);
+    border-bottom: 1px solid var(--border);
+  }
+  .mc-search-item:hover { background: var(--hover); }
+  .mc-search-item .mc-topic { font-weight: 600; font-size: 0.76rem; color: var(--accent); margin-bottom: 2px; }
+  .mc-search-item .mc-snippet { font-size: 0.76rem; color: var(--text-secondary); line-height: 1.4; }
+  .mc-search-item .mc-snippet em { background: #ffeaa7; font-style: normal; border-radius: 2px; padding: 0 2px; }
+  [data-theme="dark"] .mc-search-item .mc-snippet em { background: #5a4e1a; }
+  #mc-search-footer {
+    padding: 5px 14px; border-top: 1px solid var(--border);
+    font-size: 0.7rem; color: var(--text-secondary); flex-shrink: 0;
+  }
+
+  /* Drag */
+  #mc-drag-handle { width: 100%; height: 6px; cursor: grab; background: transparent; flex-shrink: 0; }
+  #mc-drag-handle:active { cursor: grabbing; }
+
+  /* Typing dots */
+  .mc-typing { display: flex; gap: 4px; padding: 4px 0; }
+  .mc-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-secondary); animation: dotBounce 1.2s infinite; }
+  .mc-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .mc-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dotBounce { 0%,60%,100% { opacity:0.3; transform:translateY(0); } 30% { opacity:1; transform:translateY(-4px); } }
+</style>
+</head>
+<body>
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu">
+  <div class="ctx-item" data-action="highlight"><span class="ctx-icon">🖍️</span>高亮标记</div>
+  <div class="ctx-item" data-action="underline"><span class="ctx-icon">📌</span>添加链接/定位</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item" data-action="color-red"><span class="ctx-icon">🔴</span>红色字体</div>
+  <div class="ctx-item" data-action="color-blue"><span class="ctx-icon">🔵</span>蓝色字体</div>
+  <div class="ctx-item" data-action="color-green"><span class="ctx-icon">🟢</span>绿色字体</div>
+  <div class="ctx-item" data-action="color-orange"><span class="ctx-icon">🟠</span>橙色字体</div>
+  <div class="ctx-item" data-action="color-purple"><span class="ctx-icon">🟣</span>紫色字体</div>
+  <div class="ctx-item" data-action="bold"><span class="ctx-icon">𝐁</span>加粗 / 取消加粗</div>
+  <div class="ctx-item" data-action="reset-style"><span class="ctx-icon">↩️</span>还原默认样式</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item" data-action="copy"><span class="ctx-icon">📋</span>复制选中文字</div>
+</div>
+
+<!-- NOTE CONTEXT MENU (for annotation note editor) -->
+<div id="note-ctx-menu">
+  <div class="nctx-item" data-action="note-color-red"><span style="color:#c0392b;">●</span> 红色</div>
+  <div class="nctx-item" data-action="note-color-blue"><span style="color:#2471a3;">●</span> 蓝色</div>
+  <div class="nctx-item" data-action="note-color-green"><span style="color:#1e8449;">●</span> 绿色</div>
+  <div class="nctx-item" data-action="note-color-orange"><span style="color:#d35400;">●</span> 橙色</div>
+  <div class="nctx-item" data-action="note-color-purple"><span style="color:#7d3c98;">●</span> 紫色</div>
+  <div class="nctx-divider"></div>
+  <div class="nctx-item" data-action="note-bold">𝐁 加粗 / 取消</div>
+  <div class="nctx-item" data-action="note-italic"><span style="font-style:italic;">I</span> 斜体 / 取消</div>
+  <div class="nctx-divider"></div>
+  <div class="nctx-item" data-action="note-clear">↩️ 清除格式</div>
+</div>
+
+<!-- LINK DIALOG -->
+<div id="link-dialog-overlay">
+  <div id="link-dialog">
+    <h3>📌 添加链接 / 资源定位</h3>
+    <div class="selected-preview" id="link-dialog-preview"></div>
+    <label>🔗 链接地址（URL / 书本章节 / 视频时间点）</label>
+    <input type="text" id="link-dialog-url" placeholder="如：https://... 或 第3章第15页 或 视频 12:30">
+    <label>📝 备注说明（可选）</label>
+    <textarea id="link-dialog-desc" rows="2" placeholder="如：这本书的第三章详细讲解了TEI标准..."></textarea>
+    <div class="dialog-btns">
+      <button onclick="closeLinkDialog()">取消</button>
+      <button class="primary" onclick="confirmLink()">✅ 添加下划线链接</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MINI CHAT WIDGET -->
+<button id="mc-trigger" onclick="toggleMiniChat()" title="助手对话（Ctrl+Shift+F）">💬</button>
+<div id="mc-panel">
+  <div id="mc-drag-handle"></div>
+  <div id="mc-tabs">
+    <button class="active" onclick="switchChatTab('chat')">💬 对话</button>
+    <button onclick="switchChatTab('search')">🔍 搜索</button>
+  </div>
+  <!-- Chat tab -->
+  <div id="mc-chat" class="active">
+    <div id="mc-messages">
+      <div class="mc-msg assistant">你好！我是你的DH学习助手。可以问我任何问题——Python、课程、概念、工具选择……</div>
+    </div>
+    <div id="mc-chat-input-wrap">
+      <input type="text" id="mc-chat-input" placeholder="问任何问题…" onkeydown="if(event.key==='Enter')sendChatMessage()">
+      <button id="mc-chat-send" onclick="sendChatMessage()">↑</button>
+    </div>
+  </div>
+  <!-- Search tab -->
+  <div id="mc-search">
+    <div id="mc-search-input-wrap">
+      <input type="text" id="mc-search-input" placeholder="搜索概念…" onkeydown="if(event.key==='Enter')doSearchTab()">
+      <button id="mc-search-btn" onclick="doSearchTab()">查</button>
+    </div>
+    <div id="mc-search-results"><div class="mc-empty">💡 输入概念名，跨全部知识点搜索</div></div>
+    <div id="mc-search-footer"></div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h1>🌳 DH 学习体系</h1>
+    <input type="text" id="search-box" placeholder="🔍 搜索知识点...（Ctrl+K）" oninput="searchTree()">
+  </div>
+  <div id="tree-nav"></div>
+  <div id="mode-tabs">
+    <button class="active" onclick="switchMode('knowledge')">📚 知识树</button>
+    <button onclick="switchMode('skills')">✅ 技能清单</button>
+    <button onclick="switchMode('timeline')">📅 时间线</button>
+    <button onclick="switchMode('notebook')">📓 笔记本</button>
+  </div>
+</div>
+
+<!-- MAIN AREA -->
+<div id="main-wrapper">
+  <div id="main" oncontextmenu="return false">
+    <div id="top-bar">
+      <button onclick="switchMode('skills')">✅ 技能清单</button>
+      <button onclick="switchMode('timeline')">📅 时间线</button>
+      <button onclick="switchMode('notebook')">📓 笔记本</button>
+      <button onclick="resetAllProgress()">🔄 重置进度</button>
+      <button id="theme-toggle" onclick="toggleTheme()" title="切换深色/浅色模式">🌓</button>
+      <span id="anno-count"></span>
+      <span style="font-size:0.78rem;color:var(--text-secondary);" id="last-saved"></span>
+    </div>
+    <div id="content"></div>
+    <div id="skills-panel"></div>
+    <div style="padding:12px 0;margin-top:20px;border-top:1px solid var(--border);font-size:0.75rem;color:var(--text-secondary);line-height:1.8;">
+      💡 <strong>右键</strong>选中文字 → 高亮/链接/改色/加粗 · 右上角 <strong>💬</strong> → 对话框提问（Ctrl+Shift+F） · 左下 <strong>📓</strong> → 批注笔记本
+    </div>
+  </div>
+
+  <!-- ANNOTATION DRAWER -->
+  <div id="anno-drawer">
+    <div id="anno-drawer-header">
+      <span>📝 批注</span>
+      <button id="anno-drawer-close" onclick="closeDrawer()">✕</button>
+    </div>
+    <div id="anno-drawer-body">
+      <div class="empty-drawer">
+        <div class="big-icon">💬</div>
+        <p>选中文字后右键"高亮标记"<br>然后点击高亮区域即可在此写批注</p>
+      </div>
+    </div>
+    <div id="anno-drawer-footer" style="display:none;">
+      <button class="danger" onclick="deleteAnnotation()">🗑️ 删除</button>
+      <button class="save-btn" onclick="saveAnnotationNote()">💾 保存批注</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ======================== KNOWLEDGE DATA ========================
+
+const KNOWLEDGE_TREE = [
+  {
+    id: 'dh-basics', icon: '📚', label: '1. 数字人文基础理论',
+    children: [
+      { id: 'dh-what', label: '1.1 DH是什么：定义与边界', icon: '📖', content: `
+        <h2>📖 DH是什么：定义与边界</h2>
+        <p>Digital Humanities（数字人文）是人文学科与数字技术的交叉领域。它不是把人文"数字化"了事，而是<strong>用数字方法提出新的人文问题，同时也用人文方法审视数字技术本身</strong>。</p>
+        <div class="card"><h4>🎯 一句话定义</h4><p>用计算工具做人文学问，同时用人文学视角批判计算工具。</p></div>
+        <div class="card"><h4>🔑 三个层次</h4><ol><li><strong>工具层</strong>：用数据库/编程/可视化处理人文材料</li><li><strong>方法层</strong>：用建模/编码/网络分析提出新问题</li><li><strong>批判层</strong>：审视算法偏见、数字认识论、技术政治</li></ol></div>
+        <p>📎 交叉链接：<span class="cross-link" onclick="navigateTo('dh-history')">1.2 DH发展简史</span> <span class="cross-link" onclick="navigateTo('dh-vs-id')">1.4 DH与交互设计</span></p>
+      `},
+      { id: 'dh-history', label: '1.2 DH发展简史', icon: '⏳', content: `
+        <h2>⏳ DH发展简史</h2>
+        <div class="card"><h4>1960s-1980s · 人文计算时代</h4><p>Roberto Busa神父用IBM计算机为托马斯·阿奎那著作做索引（1949）——这被认为是DH的起点。早期聚焦文本编码、定量分析、语料库语言学。这一时期的核心理念是用计算机处理人类文化的文本遗产。</p></div>
+        <div class="card"><h4>1990s-2000s · DH制度化</h4><p>TEI（文本编码倡议）1987年成立；<em>A Companion to Digital Humanities</em> (2004) 奠定学科框架；"Humanities Computing"正式改称"Digital Humanities"。这一时期，数字人文从边缘的计算工具使用发展为一个有自觉意识的学科。</p></div>
+        <div class="card"><h4>2010s · 全球化扩散</h4><p>从英美主导扩展到亚洲、南美、大洋洲。中国DH起步较晚，仍处于从"人文计算"向"数字人文"转型中，核心挑战是缺乏对界面设计和技术本身的批判性反思。</p></div>
+        <div class="card"><h4>2020s-现在 · AI时代转折</h4><p>大语言模型(LLM)和生成式AI重塑研究方法；后殖民批评、去殖民化DH兴起；"小数据"反思对抗规模崇拜。DH正处于关于AI角色的激烈辩论中心。</p></div>
+        <p>📎 交叉链接：<span class="cross-link" onclick="navigateTo('dh-global')">1.3 全球现状</span> <span class="cross-link" onclick="navigateTo('dh-future')">1.5 未来趋势</span></p>
+      `},
+      { id: 'dh-global', label: '1.3 全球DH发展现状', icon: '🌍', content: `
+        <h2>🌍 全球DH发展现状（2024-2025）</h2>
+        <div class="card"><h4>🔴 五大核心议题</h4><ol><li><strong>AI争论中心</strong>：LLM能替代人文判断吗？DH正处于这场辩论的核心——算法与阐释之间的张力前所未有地尖锐。</li><li><strong>"小数据"反思</strong>：Danny Snelson的<em>The Little Database</em>主张小的、亲密的、特异的数字集合比大规模标准化语料库更有人文价值。不是所有人文问题都需要大数据。</li><li><strong>去殖民化与全球南方</strong>：批评资源充裕的北大西洋机构对社区知识的"双重抹除"；印度的PARI（印度乡村人民档案）等项目成为社区驱动DH的典范。</li><li><strong>社区×档案</strong>：视频游戏作为数字档案的兴起；AI/元数据/档案实践中的偏见问题；用户与档案的关系被重新审视。</li><li><strong>中国DH的特殊处境</strong>：未完成从"人文计算"到"数字人文"的范式转向，大量工作停留在数据库/平台建设层面，缺乏对界面和设计的批判反思。</li></ol></div>
+        <p>📎 交叉链接：<span class="cross-link" onclick="navigateTo('dh-future')">1.5 未来方向</span> <span class="cross-link" onclick="navigateTo('tu-gap')">1.6 德累斯顿项目的定位</span></p>
+      `},
+      { id: 'dh-vs-id', label: '1.4 DH与交互设计的关系', icon: '🔀', content: `
+        <h2>🔀 DH vs 交互设计：各自的历史与交叉</h2>
+        <div class="card"><h4>根本差异（Alan Galey 称之为"宗教问题"）</h4><table style="width:100%;font-size:0.85rem;border-collapse:collapse;"><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px;font-weight:700">维度</td><td style="padding:6px;font-weight:700">交互设计</td><td style="padding:6px;font-weight:700">数字人文</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px">哲学根源</td><td style="padding:6px">认知科学+计算机科学</td><td style="padding:6px">阐释学+批判理论</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px">核心问题</td><td style="padding:6px">"怎么用？好用吗？"</td><td style="padding:6px">"这意味着什么？谁在讲述？"</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px">形式与内容</td><td style="padding:6px">可分离（XML范式：内容从样式中抽离）</td><td style="padding:6px"><strong>形式即意义</strong>（McKenzie: "forms effect meaning"）</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px">时间观</td><td style="padding:6px">共时性——当下的用户、当下的需求</td><td style="padding:6px">历时性——历史的上下文、档案的谱系</td></tr><tr><td style="padding:6px">目标</td><td style="padding:6px">解决问题→做出可用的产品</td><td style="padding:6px">提出问题→理解文化现象</td></tr></table></div>
+        <div class="card"><h4>🤝 四大交叉点</h4><ol><li><strong>信息可视化</strong>：两个领域在"如何把知识可视化呈现"上找到了共同语言。Boyd Davis和Kräutli（2015）的时间可视化（chronographics）工作桥接了设计与DH。</li><li><strong>批判性制作(Critical Making)</strong>：Trocchianesi和Bollini（2023）提出设计与DH关系的"十点宣言"——设计不只是做工具，其表演性和阐释性特征应成为DH工作的核心。代表项目：Atlante Calvino。</li><li><strong>交互式历史/游戏研究</strong>：Chapman（2023）提出"开发者—历史学家"模型——历史学家采用游戏设计师的实践方法，将历史知识嵌入交互结构。</li><li><strong>设计方法进入DH</strong>：用户研究、原型设计、故事方法被DH项目采用，不仅关注"怎么"交互，还关注"为什么"交互。</li></ol></div>
+        <div class="card"><h4>📌 关键洞见</h4><p>界面在DH中"迟到了"——Jerome McGann的《超文本理性》(2001)整本书讨论数字文本，直到最后一句话才想起来提用户界面。这个"迟到"至今仍在影响DH的发展方向。</p></div>
+        <p>📎 交叉链接：<span class="cross-link" onclick="navigateTo('dh-what')">1.1 DH定义</span> <span class="cross-link" onclick="navigateTo('hci-basics')">3.1 人机交互</span></p>
+      `},
+      { id: 'dh-future', label: '1.5 后数字时代与AI', icon: '🔮', content: `
+        <h2>🔮 后数字时代与AI驱动的范式革命</h2>
+        <div class="card"><h4>五大关键趋势</h4><ol><li><strong>从工具到研究对象</strong>：技术不仅是方法，更是人文研究对象本身。后数字时代要求DH将技术生成的新人文问题纳入研究范围。</li><li><strong>从数据建模到界面批评</strong>：学术焦点从数据结构设计转向用户面对的技术界面——界面不再是透明的工具，而是塑造认知的政治空间。</li><li><strong>元宇宙+生成式AI</strong>：可能触发库恩式的范式革命——从数据驱动的第四范式走向AI重塑的第五范式。</li><li><strong>人机协作</strong>：让DH不仅"计算"而是"思考"和"对话"——AI从工具变为对话伙伴。</li><li><strong>算法偏见与透明度</strong>：批判性审视算法系统的不公与不透明，成为DH的核心道德任务。</li></ol></div>
+        <p>📎 交叉链接：<span class="cross-link" onclick="navigateTo('data-modeling')">6.1 数据建模</span> <span class="cross-link" onclick="navigateTo('digital-presentation')">7.1 数字化呈现</span></p>
+      `},
+      { id: 'tu-gap', label: '1.6 德累斯顿项目的独特定位', icon: '🎯', content: `
+        <h2>🎯 德累斯顿工大DH项目的六大独特定位</h2>
+        <div class="card"><ol><li><strong>人文学院主导</strong>：德国第一个由人文社科学院（不是计算机学院）拥有和运营的DH硕士。人文需求驱动技术，而非技术框架决定人文问题。</li><li><strong>Sahle 2013核心课程</strong>：国际公认的DH课程标准框架，确保毕业生具备全球认可的DH素养。</li><li><strong>四大罕见方向</strong>：「艺术与图像」「学校与教育」在德国DH中极为少见——特别是教育方向，定位在数字化与教学法的交叉点。</li><li><strong>完整实习学期</strong>：第3学期450小时在SLUB（萨克森州立与大学图书馆）、德累斯顿国家艺术收藏馆、索布研究所等顶级文化机构。德国少有DH项目将实习如此深地嵌入课程。</li><li><strong>专属法律模块</strong>：覆盖版权法/数据保护/信息法/人格权——欧洲+国际视角。领域特定的法律训练在DH课程中非常罕见。</li><li><strong>HCI基础模块</strong>：桥接人文与用户体验设计——让DH毕业生不只是"会写代码的人文学者"，而是"能设计数字体验的人文学者"。</li></ol></div>
+        <p><strong>一句话总结：</strong>这个项目填补的空白是——在德国，需要一个<strong>由人文学者主导数字对话</strong>、把技术当作人文批判的工具而非目的的项目。</p>
+      `}
+    ]
+  },
+  {
+    id: 'programming', icon: '💻', label: '2. 编程与计算思维',
+    children: [
+      { id: 'python-basics', label: '2.1 Python基础', icon: '🐍', content: `
+        <h2>🐍 Python基础</h2>
+        <div class="card"><h4>🎯 目标水准</h4><p>不需要成为软件工程师。在DH语境下，"会写脚本"=能用代码处理人文学科的数据问题。这是工具，不是目的。</p></div>
+        <div class="card"><h4>✅ 达标清单</h4><ul><li>变量、数据类型、条件判断（if/else）、循环（for/while）</li><li>函数定义与调用、模块导入</li><li>文件读写（txt/csv/json/xml）</li><li>文本处理（正则表达式、分词、词频统计）</li><li>用pandas处理表格数据（筛选、排序、合并、分组）</li><li>用matplotlib/plotly画图（柱状图、折线图、散点图）</li><li>从API抓取数据（requests库）</li><li>把重复操作写成自动化脚本</li></ul></div>
+        <div class="card"><h4>🧪 自测题（做出来就达标）</h4><ol><li>给你100个.txt文件，找出出现频率最高的20个词，画成柱状图</li><li>从Wikipedia API抓取某主题的页面摘要，存为CSV</li><li>把一个Excel表格里的日期格式统一成ISO标准，按年份分组统计</li></ol></div>
+        <div class="card"><h4>🆓 推荐免费课程</h4><ul><li><a href="https://www.hermes-hub.de/lernen/resourcebase/resources/introduction-to-data-analysis-basics-with-python-for-the-humanities.html" target="_blank">Introduction to Data Analysis Basics with Python for the Humanities</a> — 专为人文学者设计，2025年发布，完全免费的开源教育资源，覆盖表格、文本、图像、音频数据处理及NLP和可视化。</li><li><a href="https://www.coursera.org/specializations/python" target="_blank">Python for Everybody (Coursera)</a> — 最经典的零基础入门，密歇根大学</li><li><a href="https://allendowney.github.io/ThinkPython/" target="_blank">Think Python (Allen Downey)</a> — 免费教材，每章有习题</li></ul></div>
+        <p>📎 交叉链接：<span class="cross-link" onclick="navigateTo('text-analysis')">2.3 文本分析</span> <span class="cross-link" onclick="navigateTo('data-viz')">2.4 数据可视化</span></p>
+      `},
+      { id: 'data-processing', label: '2.2 数据处理', icon: '📊', content: `
+        <h2>📊 数据处理</h2>
+        <div class="card"><h4>核心技能</h4><ul><li>pandas：读取/清洗/转换/合并数据框（DataFrame）——这是DH数据处理的主力工具</li><li>处理缺失值、重复值、异常值——真实的人文数据从来不是干净的</li><li>数据格式转换（CSV↔JSON↔XML↔Excel）——不同机构用不同格式</li><li>正则表达式（regex）：文本模式匹配与提取</li><li>批量文件处理（glob/os模块）：一次处理成百上千个文件</li></ul></div>
+      `},
+      { id: 'text-analysis', label: '2.3 文本分析(NLP基础)', icon: '📝', content: `
+        <h2>📝 文本分析（NLP基础）</h2>
+        <div class="card"><h4>DH语境下的文本分析工具箱</h4><ul><li>分词(Tokenization)与词性标注(POS tagging)——把文本拆成可分析的最小单位</li><li>词频统计与TF-IDF——哪些词在一篇文档中特别重要？</li><li>命名实体识别(NER)：从文本中自动提取人名/地名/机构名/日期</li><li>情感分析(Sentiment Analysis)：文本的情感倾向是正/负/中性？</li><li>主题建模(Topic Modeling)：LDA等算法——一大堆文档在讨论哪些主题？</li><li>搭配分析(Collocation Analysis)：哪些词经常一起出现？</li></ul></div>
+        <div class="card"><h4>常用Python库</h4><p>NLTK（经典，适合教学） / spaCy（工业级，速度快） / TextBlob（最简单） / gensim（主题建模强） / jieba（中文分词必备）</p></div>
+      `},
+      { id: 'data-viz', label: '2.4 数据可视化', icon: '📈', content: `
+        <h2>📈 数据可视化</h2>
+        <div class="card"><h4>基础层：matplotlib + seaborn</h4><p>柱状图、折线图、散点图、热力图、分布图——学术论文标配</p></div>
+        <div class="card"><h4>进阶层：交互式可视化</h4><ul><li>Plotly：交互式网页图表，可缩放/悬停查看数据</li><li>D3.js：完全自定义的数据可视化（需要HTML/JS基础）</li><li>Gephi：网络分析可视化——人物关系图、概念关联图</li><li>QGIS：地理空间可视化——将历史数据放在地图上</li></ul></div>
+        <p>📎 交叉链接：<span class="cross-link" onclick="navigateTo('info-viz')">7.4 信息可视化</span></p>
+      `},
+      { id: 'git-basics', label: '2.5 版本控制(Git)', icon: '🔧', content: `
+        <h2>🔧 Git基础</h2>
+        <div class="card"><h4>只需要掌握这些</h4><ul><li>git init / clone / add / commit / push / pull —— 六个命令覆盖日常</li><li>理解分支(branch)的概念——不同版本并行工作</li><li>会用 .gitignore —— 告诉Git哪些文件不要追踪</li><li>GitHub Desktop —— 图形界面，不需要记任何命令</li></ul></div>
+        <div class="card"><h4>🆓 学习资源</h4><ul><li><a href="https://learngitbranching.js.org/" target="_blank">Learn Git Branching</a> — 可视化交互教程，游戏化学习</li><li>GitHub Skills — GitHub官方免费教程</li></ul></div>
+      `}
+    ]
+  },
+  {
+    id: 'hci', icon: '🖥️', label: '3. 人机交互(HCI)',
+    children: [
+      { id: 'hci-basics', label: '3.1 用户中心设计(UCD)', icon: '👤', content: `
+        <h2>👤 用户中心设计 (User-Centered Design)</h2>
+        <div class="card"><h4>UCD四步流程</h4><ol><li><strong>情境分析</strong>：用户是谁？在什么环境下使用？有什么限制？（技术能力、设备、时间……）</li><li><strong>需求获取</strong>：用户需要什么？有什么痛点？观察+访谈+问卷</li><li><strong>原型设计</strong>：纸上草图→线框图→低保真原型→高保真原型。迭代，不是一次做完。</li><li><strong>评估</strong>：可用性测试（观察用户使用）、启发式评估（专家检查）</li></ol></div>
+        <div class="card"><h4>🆓 免费课程</h4><ul><li><a href="https://www.educative.io/courses/intro-human-computer-interaction" target="_blank">Introduction to HCI (Educative)</a> — AI驱动免费课程，覆盖HCI+可用性工程+通用设计</li><li><a href="https://www.edx.org/course/human-computer-interaction-i-fundamentals-design-principles" target="_blank">Georgia Tech HCI (edX)</a> — 大学级入门</li></ul></div>
+        <p>📎 交叉链接：<span class="cross-link" onclick="navigateTo('usability')">3.2 可用性评估</span> <span class="cross-link" onclick="navigateTo('accessibility')">3.3 无障碍设计</span></p>
+      `},
+      { id: 'usability', label: '3.2 可用性评估', icon: '🧪', content: `
+        <h2>🧪 可用性评估方法</h2>
+        <div class="card"><h4>两类方法</h4><ul><li><strong>启发式评估</strong>：专家按Nielsen十大可用性原则逐一检查界面。不需要用户参与，快速发现问题。</li><li><strong>用户测试</strong>：找5个用户做典型任务，观察他们在哪里卡住——5个人能发现约85%的可用性问题。</li><li><strong>A/B测试</strong>：比较两个设计版本，数据驱动决策。</li><li><strong>眼动追踪</strong>：高级方法，了解即可——看用户视线在屏幕上如何移动。</li></ul></div>
+        <div class="card"><h4>Nielsen十大原则（速记版）</h4><ol><li>系统状态可见</li><li>系统与真实世界匹配</li><li>用户可控与撤销</li><li>一致性与标准</li><li>防错设计</li><li>识别而非回忆</li><li>灵活高效</li><li>美学与极简</li><li>帮助用户识别与修正错误</li><li>帮助与文档</li></ol></div>
+      `},
+      { id: 'accessibility', label: '3.3 无障碍设计(A11y)', icon: '♿', content: `
+        <h2>♿ 无障碍设计 (Accessibility / A11y)</h2>
+        <div class="card"><h4>核心标准：WCAG 2.1 四原则</h4><ul><li><strong>可感知</strong>：所有内容都能被至少一种感官感知——图片要有alt替代文本、视频要有字幕、色彩对比度≥4.5:1</li><li><strong>可操作</strong>：所有功能可通过键盘操作（不只是鼠标）、给用户足够时间、不设计会诱发癫痫的闪烁</li><li><strong>可理解</strong>：语言清晰、导航一致、输入辅助（如自动填充、拼写检查）</li><li><strong>健壮</strong>：兼容屏幕阅读器（如NVDA/VoiceOver）等辅助技术、语义化的HTML</li></ul></div>
+        <div class="card"><h4>🆓 免费课程</h4><ul><li><a href="https://www.audioeye.com/post/audioeye-launches-audioeye-learning-to-give-professionals-a-free-practical-approach-to-accessibility-education/" target="_blank">AudioEye Learning</a> — 2025年10月新发布，完全免费。三条路径：无障碍101、合规法律、编程实践（语义化HTML/ARIA/键盘导航）。自定进度，短课程+测验。</li></ul></div>
+      `},
+      { id: 'prototyping', label: '3.4 界面原型设计', icon: '🎨', content: `
+        <h2>🎨 界面原型设计</h2>
+        <div class="card"><h4>从纸到屏幕的工具链</h4><ul><li><strong>纸上原型</strong>：最快、最便宜——画在纸上，给用户看，马上改</li><li><strong>Figma</strong>：免费，行业标准，浏览器里就能用，不需要安装</li><li><strong>Penpot</strong>：开源替代品，功能类似Figma</li><li><strong>HTML/CSS原型</strong>：最接近真实产品——你写的就是最终代码</li></ul></div>
+        <div class="card"><h4>在DH项目中的应用</h4><p>数字展览界面、虚拟博物馆导航、交互式数据可视化仪表盘——这些在开发前都应该先做原型测试。</p></div>
+      `}
+    ]
+  },
+  {
+    id: 'req-test', icon: '📋', label: '4. 需求与测试管理',
+    children: [
+      { id: 'req-analysis', label: '4.1 需求获取与分析', icon: '🔍', content: `
+        <h2>🔍 需求获取与分析</h2>
+        <div class="card"><h4>核心概念</h4><ul><li><strong>Stakeholder分析</strong>：谁关心这个项目？（出资方、用户、开发者、监管机构……）他们的利益可能冲突。</li><li><strong>功能需求</strong>：系统应该<em>做什么</em>——"展览页面应支持按年代筛选藏品"</li><li><strong>非功能需求</strong>：系统应该<em>是什么样</em>——性能、安全、可用性、可维护性</li><li><strong>用户故事(User Story)</strong>：标准格式"作为[角色]，我想要[功能]，以便[目的]"</li></ul></div>
+        <p>🆓 课程：<a href="https://skillify.asia/course/682ff4c77953345846040055" target="_blank">Advanced Software Testing (Skillify)</a> — 免费10.5小时，覆盖需求分析与测试规划</p>
+      `},
+      { id: 'req-spec', label: '4.2 需求规格化', icon: '📐', content: `
+        <h2>📐 需求规格化</h2>
+        <div class="card"><h4>把模糊需求变成可验证规格</h4><ul><li>用例图(UML Use Case Diagram)：系统与外部角色的交互概览</li><li>用户故事地图(User Story Mapping)：按优先级和时间线排列用户故事</li><li>功能规格文档：详细描述每个功能的行为</li><li>验收标准(Acceptance Criteria)："当[条件]，系统应[行为]"——可测试的</li></ul></div>
+      `},
+      { id: 'unit-test', label: '4.3 单元测试', icon: '🧩', content: `
+        <h2>🧩 单元测试 (Unit Test)</h2>
+        <div class="card"><h4>Python测试：pytest</h4><p>pytest是Python最流行的测试框架。写测试函数来验证代码的每个"单元"（一个函数、一个类方法）在给定输入下产生预期输出。</p></div>
+        <div class="card"><h4>在DH中的意义</h4><p>确保你的数据处理脚本不会悄悄出错——比如批量处理1000个文件时，前100个正常但第101个因为格式不同导致崩溃，而你直到论文提交前才发现数据有误。</p><p><strong>TDD（测试驱动开发）</strong>：先写测试→测试失败→写代码让测试通过→重构。这种思维方式对DH项目尤其有价值。</p></div>
+      `},
+      { id: 'system-test', label: '4.4 系统与回归测试', icon: '🔄', content: `
+        <h2>🔄 系统测试与回归测试</h2>
+        <div class="card"><h4>三者的区别</h4><ul><li><strong>单元测试</strong>：测试单个函数/方法——"这个零件能用吗？"</li><li><strong>系统测试</strong>：整个系统端到端——"整个机器能跑吗？"</li><li><strong>回归测试</strong>：改了代码后，旧功能还正常吗——"修了一个bug，坏了三个功能？"</li><li><strong>自动化测试</strong>：用CI/CD（持续集成/持续部署）自动跑测试——每次提交代码自动检查</li></ul></div>
+      `}
+    ]
+  },
+  {
+    id: 'law-ethics', icon: '⚖️', label: '5. 数字法律与伦理',
+    children: [
+      { id: 'copyright', label: '5.1 版权法基础', icon: '©️', content: `
+        <h2>©️ 版权法基础（德国/欧盟框架）</h2>
+        <div class="card"><h4>DH场景下的关键法律问题</h4><ul><li>数字化历史文献的版权状态——公共领域（作者死后70年）vs 仍在保护期</li><li>数字版本的版权归属——你为一份公共领域手稿创建了数字版本，你的版本有版权吗？</li><li>Creative Commons许可的选择和使用——CC BY / CC BY-SA / CC BY-NC / CC0 分别意味着什么？</li><li>孤儿作品(Orphan Works)——版权人找不到的作品怎么处理？</li><li>博物馆/档案馆的数字化权利——机构有权利扫描其藏品吗？</li></ul></div>
+      `},
+      { id: 'gdpr', label: '5.2 数据保护法(GDPR)', icon: '🔒', content: `
+        <h2>🔒 GDPR与数据保护</h2>
+        <div class="card"><h4>DH项目必须考虑的GDPR要点</h4><ul><li>个人数据的定义非常宽泛——姓名、图像、IP地址、Cookie标识符……都可能算</li><li>知情同意(Informed Consent)——不能默认勾选，必须是主动、具体、可撤回的</li><li>数据最小化原则——只收集你真正需要的数据</li><li>被遗忘权——用户可以要求删除其数据</li><li>跨境数据传输限制——数据从欧盟传到美国/中国的合规要求</li><li>特别敏感数据——种族、政治观点、宗教、健康、性取向……需要额外保护</li></ul></div>
+      `},
+      { id: 'info-law', label: '5.3 信息法与数字伦理', icon: '📜', content: `
+        <h2>📜 信息法与数字伦理全景</h2>
+        <div class="card"><h4>2024-2025年的关键法律框架</h4><ul><li><strong>DSA（欧盟数字服务法）</strong>：平台对其内容承担更多责任——影响在线档案和数字展览平台</li><li><strong>EU AI Act</strong>：世界第一部全面的AI法律——按风险分级监管AI系统</li><li><strong>信息自由法</strong>：公众获取政府信息的权利——与档案开放的交叉</li><li><strong>数字遗产</strong>：人死后的数字资产（社交媒体、云存储、加密货币……）归谁？</li></ul></div>
+      `}
+    ]
+  },
+  {
+    id: 'modeling', icon: '🗃️', label: '6. 数据建模',
+    children: [
+      { id: 'data-modeling', label: '6.1 什么是数据建模(DH语境)', icon: '🏗️', content: `
+        <h2>🏗️ 数据建模 ≠ 3D建模！</h2>
+        <div class="card"><h4>❌ 不是Blender/Maya那种3D建模</h4><p>那个是用多边形和材质搭建立体模型。DH当然也会用到3D技术来做虚拟重建（比如数字还原一座中世纪教堂），但它只是"数字化呈现"环节中的一种可选工具。</p></div>
+        <div class="card"><h4>✅ DH里的"建模"是数据建模</h4><p><strong>把混沌的历史信息变成计算机能处理的结构化数据的过程。这是DH最核心的方法论之一。</strong></p><p>比如你面对一批18世纪的婚礼契约手稿，数据建模要决定：</p><ul><li><strong>粒度</strong>：每一份契约记录哪些字段？日期（精确到日？还是只到年？用格里高利历还是儒略历？）、新郎姓名+职业+居住地、新娘姓名+职业+居住地、证人姓名+与双方关系、财产清单（怎么分类？）、契约条款（怎么标注法律术语？）</li><li><strong>关系</strong>：这些信息之间是什么关系？新郎→嫁妆→财产清单、证人→关联→新郎/新娘</li><li><strong>标准</strong>：用什么标准编码？TEI/XML（人文学科最通用）、关系型数据库（MySQL/PostgreSQL）、RDF三元组（知识图谱）？</li></ul></div>
+        <div class="card"><h4>🎯 关键洞见（Julia Flanders）</h4><p>建模本质上是<strong>人文阐释行为</strong>：你选择保留什么、忽略什么、怎么分类——这些决策本身就是学术判断，不是中性的技术操作。不存在"客观的"数据模型。每个模型都反映了建模者的视角和立场。</p></div>
+        <p>📎 交叉链接：<span class="cross-link" onclick="navigateTo('tei-xml')">6.2 TEI/XML</span> <span class="cross-link" onclick="navigateTo('ontology')">6.3 本体论</span></p>
+      `},
+      { id: 'tei-xml', label: '6.2 TEI/XML标准', icon: '📄', content: `
+        <h2>📄 TEI（文本编码倡议）</h2>
+        <div class="card"><h4>什么是TEI？</h4><p>TEI (Text Encoding Initiative) 是人文学科最通用的<strong>XML标准</strong>，专门用来编码文本的结构和语义特征。1987年成立，是一个社区驱动的标准——这意味着它不断在进化，由使用它的学者共同维护。</p></div>
+        <div class="card"><h4>TEI能标注什么？</h4><ul><li>文档结构：章节、段落、标题、页码、脚注</li><li>命名实体：人名（含别名、笔名）、地名（含历史地名与现代地名对应）、日期（含不同历法）</li><li>编辑干预：删除（划掉但可辨认）、添加（写在行间或页边）、修改（先写A后改为B）</li><li>元数据：作者、标题、来源、语言、创作时间、抄写者</li><li>物理特征：纸张、墨迹、装订、破损</li></ul></div>
+        <div class="card"><h4>入门资源</h4><ul><li><a href="https://tei-c.org/" target="_blank">TEI Consortium官网</a></li><li><a href="https://teibyexample.org/" target="_blank">TEI by Example</a> — 交互式教程，从零开始</li></ul></div>
+      `},
+      { id: 'ontology', label: '6.3 本体论与知识图谱', icon: '🕸️', content: `
+        <h2>🕸️ 本体论与知识图谱</h2>
+        <div class="card"><h4>比TEI更进一步——让机器"理解"关系</h4><p>TEI标注文本<em>里面</em>有什么，本体论(Ontology)定义这些东西<em>之间</em>是什么关系——而且是机器可推理的形式化关系。</p></div>
+        <div class="card"><h4>关键技术栈</h4><ul><li><strong>RDF</strong>（资源描述框架）：一切表示为三元组——（主语，谓语，宾语）。例如：（蒙娜丽莎，创作者，达芬奇）、（达芬奇，出生于，1452年）</li><li><strong>OWL</strong>（Web本体语言）：在RDF基础上增加逻辑约束——"一个人只能有一个出生日期"</li><li><strong>SPARQL</strong>：查询RDF数据的语言——类似SQL但用于知识图谱</li><li><strong>Wikidata</strong>：维基百科背后的结构化知识图谱——最大的开放知识库，DH项目经常用到</li></ul></div>
+      `},
+      { id: 'metadata', label: '6.4 元数据标准', icon: '🏷️', content: `
+        <h2>🏷️ 元数据标准</h2>
+        <div class="card"><h4>主要标准——不同领域用不同的"语言"描述藏品</h4><ul><li><strong>Dublin Core</strong>：最基础的15个元素（标题、创建者、日期、主题、格式……）——几乎所有数字图书馆的底层标准</li><li><strong>MARC</strong>：图书馆界标准——全世界图书馆目录的通用语言</li><li><strong>CIDOC-CRM</strong>：文化遗产领域的本体论标准——博物馆和档案馆的核心参考模型</li><li><strong>IIIF</strong>（国际图像互操作框架）：不是元数据标准本身，而是数字图像的标准API——让任何兼容的图像查看器都能打开任何兼容的图像库</li></ul></div>
+      `}
+    ]
+  },
+  {
+    id: 'digital-presentation', icon: '🖼️', label: '7. 数字化呈现',
+    children: [
+      { id: 'dig-exhibition', label: '7.1 数字展览设计', icon: '🏛️', content: `
+        <h2>🏛️ 数字展览设计</h2>
+        <div class="card"><h4>从实体展示到数字叙事</h4><ul><li>在线藏品数据库——最基础的形式（如Europeana、Google Arts & Culture）</li><li>数字版本学(Digital Scholarly Editions)——学术化的深度呈现，不只是看图片，而是看文本的演变</li><li>交互式时间线——将历史事件在时间维度上展开</li><li>地图叙事——将历史信息放在地理空间里</li><li>策展式数字故事——像策展一样选择、组织、讲述数字内容</li></ul></div>
+      `},
+      { id: 'vr-ar', label: '7.2 虚拟博物馆/VR/AR', icon: '🥽', content: `
+        <h2>🥽 虚拟博物馆 & XR技术光谱</h2>
+        <div class="card"><h4>从易到难的技术选项</h4><ul><li><strong>720°全景导览</strong>：最易实现——拍摄全景照片，做成可拖拽的虚拟空间。很多博物馆已经做了。</li><li><strong>VR虚拟博物馆</strong>：完全沉浸式——戴上VR头盔，在3D重建的博物馆里"行走"。大英博物馆的VR周末是标杆案例。</li><li><strong>AR增强现实</strong>：在真实世界上叠加数字信息——站在遗址废墟上，举起手机，看到它1000年前的样子。</li><li><strong>MR混合现实</strong>：实体展品+数字信息叠加——在真实的画廊中，某些展品周围出现数字可视化。</li><li><strong>多感官体验</strong>：不只是看——声音景观（听到历史现场的声音）、嗅觉记忆映射（闻到当时的气味）。</li></ul></div>
+      `},
+      { id: 'interactive-narrative', label: '7.3 交互式叙事', icon: '🎮', content: `
+        <h2>🎮 交互式叙事 & 严肃游戏</h2>
+        <div class="card"><h4>叙事形式</h4><ul><li><strong>交互式纪录片</strong>：用户选择叙事路径——不是被动观看，而是主动探索。i-Doc（交互式纪录片）是重要形式。</li><li><strong>严肃游戏(Serious Games)</strong>：用游戏机制传达历史/文化知识——不是为了娱乐，是为了学习和理解。例如：通过角色扮演理解历史决策的困境。</li><li><strong>参与式策展</strong>："人人都是策展人"——用户从藏品中创建自己的个人展览并分享。</li><li><strong>个性化叙事路径</strong>：系统根据用户的选择和偏好动态调整叙事内容。像"选择你自己的冒险"。</li></ul></div>
+        <p>📎 交叉链接：<span class="cross-link" onclick="navigateTo('dh-vs-id')">1.4 DH与交互设计</span></p>
+      `},
+      { id: 'info-viz', label: '7.4 信息可视化', icon: '📊', content: `
+        <h2>📊 信息可视化（InfoVis）在DH中的应用</h2>
+        <div class="card"><h4>四大可视化类型</h4><ul><li><strong>时间可视化(Chronographics)</strong>：历史事件的时间分布——什么事件在何时发生、持续多久、事件之间的间隔和重叠</li><li><strong>空间可视化(GIS)</strong>：将历史数据放在地图上——贸易路线、人口迁徙、战争进程</li><li><strong>网络可视化</strong>：人物/机构/概念之间的关联——谁给谁写信？哪个思想影响了哪个思想？</li><li><strong>文本可视化</strong>：词云、主题分布、情感曲线——一大段文本的整体模式是什么？</li></ul></div>
+        <p>📎 交叉链接：<span class="cross-link" onclick="navigateTo('data-viz')">2.4 数据可视化</span></p>
+      `},
+      { id: 'aigc', label: '7.5 AI生成内容(AIGC)', icon: '🤖', content: `
+        <h2>🤖 AIGC在文化遗产中的应用（2025最新）</h2>
+        <div class="card"><h4>三大生成方向</h4><ol><li><strong>Text-to-Image（文字→图像）</strong>：根据文本描述生成文物图像——Stable Diffusion + LoRA微调在特定文化风格的文物图像生成上取得了突破。</li><li><strong>Text-to-3D（文字→3D模型）</strong>：从文字描述生成文物3D模型——DreamFusion/Point-E/Shape-E等技术让虚拟文物数据库建设大幅加速。</li><li><strong>Text-to-Scene（文字→大规模场景）</strong>：从文字描述生成整个历史空间——GAN和扩散模型（InfiniCity等）使重建整个历史城市成为可能。</li></ol></div>
+        <div class="card"><h4>其他前沿AI应用</h4><ul><li>历史人物面部重建：从头骨或画像推断面容</li><li>AI策展助手：自动建议展览主题和展品组合</li><li>个性化虚拟导览：根据访客兴趣生成定制路线</li><li>档案聊天机器人：如Impresso Datalab的Barista——你可以"对话"历史档案</li></ul></div>
+      `}
+    ]
+  },
+  {
+    id: 'art-image', icon: '🎨', label: '8. 专业方向：艺术与图像',
+    children: [
+      { id: 'digital-art-history', label: '8.1 数字艺术史', icon: '🖌️', content: `
+        <h2>🖌️ 数字艺术史</h2>
+        <div class="card"><h4>用计算方法研究艺术</h4><ul><li>大规模图像数据集的计算机视觉分析——不只是看10张画，而是看10万张</li><li>风格计量学(Stylometry)——用算法量化分析艺术风格的变化和影响</li><li>数字化的艺术市场与收藏史——追踪艺术品如何流转</li><li>计算美学(Computational Aesthetics)——算法能"判断"美吗？这本身就是一个深刻的DH问题</li></ul></div>
+      `},
+      { id: 'visual-culture', label: '8.2 视觉文化研究', icon: '👁️', content: `
+        <h2>👁️ 视觉文化与数字方法</h2>
+        <div class="card"><h4>数字时代的视觉文化新议题</h4><ul><li>图像如何在新媒体环境中传播和变异——一个meme的谱系学</li><li>数字平台上的视觉政治——谁的形象被看到？谁的被隐藏？</li><li>AI生成图像的文化影响——当"照片"不再是证据</li><li>视觉数据的伦理使用——人脸识别、监控与社会公正</li></ul></div>
+      `},
+      { id: 'digital-curation', label: '8.3 数字策展', icon: '🏗️', content: `
+        <h2>🏗️ 数字策展</h2>
+        <div class="card"><h4>策展的新形态</h4><ul><li>在线展览的叙事结构设计——不是把实体展"拍个照放网上"，而是为数字媒介重新设计叙事</li><li>数字藏品的元数据管理——好的元数据=可发现的藏品</li><li>数字保存(Digital Preservation)策略——50年后还能打开今天的文件吗？</li><li>社区参与式策展——让社区成员参与选择、描述、解释他们自己的文化遗产</li></ul></div>
+      `},
+      { id: 'cultural-heritage', label: '8.4 文化遗产数字化', icon: '🏺', content: `
+        <h2>🏺 文化遗产数字化技术栈</h2>
+        <div class="card"><h4>这是会用到3D建模的地方！</h4><ul><li><strong>摄影测量法(Photogrammetry)</strong>：从多角度照片自动生成3D模型——拍几十张照片→软件算出三维结构</li><li><strong>3D扫描</strong>：激光扫描获取精确的几何数据——精度可达亚毫米</li><li><strong>多光谱成像</strong>：用不同波长的光（紫外、红外……）拍摄，揭示肉眼看不到的细节——底层素描、修改痕迹、褪色文字</li><li><strong>数字孪生(Digital Twin)</strong>：实体文物的完整数字副本——不只是外观，还包括结构数据、环境数据</li><li><strong>IIIF</strong>：国际图像互操作框架——让任何兼容的图像查看器都能深度缩放、标注、比较任何兼容的图像库</li></ul></div>
+      `}
+    ]
+  },
+  {
+    id: 'academic-skills', icon: '🗣️', label: '9. 学术与表达能力',
+    children: [
+      { id: 'academic-writing', label: '9.1 学术写作', icon: '✍️', content: `
+        <h2>✍️ 学术写作</h2>
+        <div class="card"><h4>德语/英语学术写作资源</h4><ul><li>Purdue OWL — 英语学术写作全面指南（免费），从论文结构到引用格式</li><li>Uni Siegen Schreibzentrum — 德语学术写作指导</li><li>Zotero — 参考文献管理工具（免费），自动生成引用和参考文献列表</li><li>Grammarly / DeepL Write — 语言润色工具</li></ul></div>
+        <p>📎 交叉链接：<span class="cross-link" onclick="navigateTo('academic-presentation')">9.2 学术展示</span></p>
+      `},
+      { id: 'academic-presentation', label: '9.2 学术展示', icon: '🎤', content: `
+        <h2>🎤 学术展示技能</h2>
+        <div class="card"><h4>🆓 免费课程与视频资源</h4><ul><li><a href="https://videoportal.uni-freiburg.de/" target="_blank">弗莱堡大学 Compelling Presentations</a> — 视频课约1小时50分钟，英语，覆盖规划和交付科学展示的完整流程</li><li><a href="https://lbdienst11.hrz.uni-giessen.de/ilias.php?baseClass=illmpresentationgui&obj_id=192885" target="_blank">吉森大学 Professional Presentations in English</a> — ILIAS在线模块，从结构到Q&A的全面训练</li><li><a href="https://news.uni-goettingen.de/gauss/2024/05/31/online-modules-on-effective-scientific-presentations-2/" target="_blank">哥廷根大学 Master Scientific Presentations</a> — 自定进度Udemy课程，可邮件申请免费访问</li><li><a href="https://www.uni-saarland.de/en/institution/isz-saar/international-academic-culture/workshops/gestaltung-powerpoint.html" target="_blank">萨尔大学 学术展示设计</a> — 德语授课，B2水平，覆盖PPT母版/布局/图表/引用</li><li><a href="https://www.nawik.de/en/workshops-courses/workshops-courses-en/presenting-science/" target="_blank">NaWik Presenting Science</a> — 可选德语或英语，科学家培训科学家的机构</li></ul></div>
+        <div class="card"><h4>YouTube 搜索关键词</h4><p><code>scientific presentation skills</code> / <code>wissenschaftliche Präsentation</code> / <code>how to give a conference talk</code> / <code>academic poster design</code> / <code>research presentation tips</code></p></div>
+      `},
+      { id: 'academic-language', label: '9.3 学术英语/德语', icon: '🗣️', content: `
+        <h2>🗣️ 学术英语/德语</h2>
+        <div class="card"><h4>英语B2——硬性入学要求</h4><p>需要官方语言证书。可接受的证书类型见Eignungsfeststellungsordnung。常见选择：IELTS（建议6.0+）、TOEFL iBT（建议80+）、剑桥英语First (FCE)。</p></div>
+        <div class="card"><h4>德语</h4><p>虽然部分课程用英语，但教学主体语言是德语。建议至少B1水平——能听懂讲座、参与讨论、读学术德语。资源：Deutsche Welle免费课程 / Goethe Institut在线课程 / Easy German YouTube频道 / 德累斯顿工大开学前通常有语言预备班。</p></div>
+      `},
+      { id: 'interdisciplinary', label: '9.4 跨学科沟通', icon: '🤝', content: `
+        <h2>🤝 跨学科沟通——DH的核心软技能</h2>
+        <div class="card"><h4>四种"翻译"场景</h4><ol><li><strong>向计算机科学家解释人文问题</strong>："这不是一个分类问题，这是一个关于意义如何被构建的阐释学问题。"</li><li><strong>向人文学者解释技术可能性</strong>："计算机不能替你解释这首诗，但它可以帮你找到1820-1850年间所有使用类似隐喻的文本。"</li><li><strong>向公众解释数字人文项目</strong>："我们不是把书扫描进电脑，我们是在问：当书变成数据后，我们能发现什么之前看不到的东西？"</li><li><strong>在跨学科团队中找到自己的角色</strong>：DH从业者往往是团队中唯一同时理解两边语言的人——这是你的核心价值。</li></ol></div>
+      `}
+    ]
+  },
+  {
+    id: 'thesis', icon: '📝', label: '10. 毕业论文',
+    children: [
+      { id: 'thesis-topic', label: '10.1 选题方向建议', icon: '💡', content: `
+        <h2>💡 选题方向建议（基于你跨媒介艺术创作的背景）</h2>
+        <div class="card"><h4>与你的背景最匹配的四个方向</h4><ul><li><strong>数字策展 × 跨媒介艺术</strong>：为当代跨媒介艺术作品设计数字化呈现方案——你的创作经验可以直接转化为研究洞察。</li><li><strong>AIGC × 艺术创作</strong>：AI生成图像在艺术展览中的应用与批判——作为创作者，你对"AI生成的是艺术吗"这个问题有独特发言权。</li><li><strong>文化遗产 × 交互设计</strong>：为特定文化遗址或藏品设计交互式数字体验——连接你的艺术感知和DH技能。</li><li><strong>视觉文化 × 数据可视化</strong>：用计算方法分析视觉艺术中的趋势——把艺术史变成数据故事。</li></ul></div>
+      `},
+      { id: 'thesis-method', label: '10.2 研究方法', icon: '🔬', content: `
+        <h2>🔬 DH研究方法工具箱</h2>
+        <div class="card"><h4>选择哪个方法取决于你的研究问题</h4><ul><li><strong>语料库分析(Corpus Analysis)</strong>：当你需要分析大量文本/图像时</li><li><strong>网络分析(Network Analysis)</strong>：当你研究关系——人物、机构、概念之间的连接</li><li><strong>空间分析(Spatial Analysis / GIS)</strong>：当你研究"在哪里"——地理分布、空间关系</li><li><strong>计算文本分析</strong>：当你需要从文本中发现量化模式</li><li><strong>设计研究(Design Research) + 批判性制作</strong>：当你需要做出一个东西来证明你的论点——这可能是最适合你的方法，因为它与你的创作实践一脉相承</li></ul></div>
+      `},
+      { id: 'thesis-plan', label: '10.3 论文写作计划', icon: '📅', content: `
+        <h2>📅 第4学期论文时间线（建议）</h2>
+        <div class="card"><h4>24周的节奏</h4><ol><li><strong>第1-2周</strong>：确定选题 + 导师确认 + 初步阅读清单</li><li><strong>第3-6周</strong>：文献综述 + 方法论设计 + 研究伦理审查（如涉及人类参与者）</li><li><strong>第7-14周</strong>：研究/开发/实验——这是最长、最不确定的阶段</li><li><strong>第15-18周</strong>：写作初稿——不求完美，先把所有东西写出来</li><li><strong>第19-22周</strong>：修改 + 定稿——这是论文真正成形的时候</li><li><strong>第23-24周</strong>：提交 + 答辩准备——练习你的20分钟陈述</li></ol></div>
+      `}
+    ]
+  }
+];
+
+const SKILLS_LIST = [
+  {
+    group: '💻 编程与工具',
+    skills: [
+      { id:'sk-py-var', name:'Python：变量、数据类型、条件判断', level:1 },
+      { id:'sk-py-loop', name:'Python：循环与函数', level:1 },
+      { id:'sk-py-file', name:'Python：文件读写(txt/csv/json/xml)', level:2 },
+      { id:'sk-py-pandas', name:'Python：pandas数据处理', level:2 },
+      { id:'sk-py-viz', name:'Python：matplotlib/plotly可视化', level:2 },
+      { id:'sk-py-regex', name:'Python：正则表达式文本处理', level:3 },
+      { id:'sk-py-api', name:'Python：API调用与数据抓取', level:3 },
+      { id:'sk-git', name:'Git：版本控制基础操作', level:1 },
+      { id:'sk-html', name:'HTML/CSS：搭建基础网页', level:1 },
+      { id:'sk-figma', name:'Figma：界面原型设计', level:1 },
+    ]
+  },
+  {
+    group: '🧠 数字人文理论',
+    skills: [
+      { id:'sk-dh-def', name:'能用自己的话解释DH是什么', level:1 },
+      { id:'sk-dh-history', name:'了解DH发展史的四个阶段', level:1 },
+      { id:'sk-dh-global', name:'了解全球DH五大核心议题', level:2 },
+      { id:'sk-dh-vs-id', name:'能辨析DH与交互设计的差异', level:2 },
+      { id:'sk-dh-future', name:'了解后数字时代趋势', level:2 },
+      { id:'sk-dh-tu', name:'了解德累斯顿DH项目的独特定位', level:1 },
+    ]
+  },
+  {
+    group: '🖥️ 人机交互',
+    skills: [
+      { id:'sk-ucd', name:'理解用户中心设计(UCD)流程', level:1 },
+      { id:'sk-heuristic', name:'能用启发式原则评估界面', level:2 },
+      { id:'sk-user-test', name:'能设计和执行简单的用户测试', level:3 },
+      { id:'sk-a11y', name:'了解WCAG无障碍标准', level:1 },
+      { id:'sk-a11y-check', name:'能检查基本无障碍问题', level:2 },
+    ]
+  },
+  {
+    group: '📋 需求与测试',
+    skills: [
+      { id:'sk-stakeholder', name:'能做利益相关者分析', level:1 },
+      { id:'sk-user-story', name:'能写用户故事(User Story)', level:2 },
+      { id:'sk-usecase', name:'能画用例图', level:2 },
+      { id:'sk-pytest', name:'能用pytest写单元测试', level:3 },
+      { id:'sk-regression', name:'理解系统测试与回归测试', level:2 },
+    ]
+  },
+  {
+    group: '⚖️ 法律与伦理',
+    skills: [
+      { id:'sk-copyright', name:'了解版权法基础（德国/欧盟）', level:1 },
+      { id:'sk-gdpr', name:'了解GDPR核心原则', level:1 },
+      { id:'sk-cc', name:'能选择合适的Creative Commons许可', level:2 },
+    ]
+  },
+  {
+    group: '🗃️ 数据建模',
+    skills: [
+      { id:'sk-model-what', name:'能区分数据建模与3D建模', level:1 },
+      { id:'sk-tei', name:'了解TEI的基本概念', level:1 },
+      { id:'sk-xml', name:'能阅读基本XML文档', level:2 },
+      { id:'sk-tei-markup', name:'能用TEI标注简单文本', level:3 },
+      { id:'sk-rdf', name:'了解RDF三元组概念', level:2 },
+      { id:'sk-metadata', name:'了解Dublin Core元数据标准', level:1 },
+    ]
+  },
+  {
+    group: '🖼️ 数字化呈现',
+    skills: [
+      { id:'sk-dig-exhibit', name:'了解数字展览的主要形式', level:1 },
+      { id:'sk-vr-ar', name:'了解VR/AR/MR的区别', level:1 },
+      { id:'sk-narrative', name:'了解交互式叙事设计', level:2 },
+      { id:'sk-infovis', name:'了解信息可视化类型', level:2 },
+      { id:'sk-aigc', name:'了解AIGC在文化遗产中的应用', level:1 },
+    ]
+  },
+  {
+    group: '🎨 艺术与图像方向',
+    skills: [
+      { id:'sk-art-history', name:'了解数字艺术史核心议题', level:1 },
+      { id:'sk-visual-culture', name:'了解数字视觉文化研究', level:1 },
+      { id:'sk-curation', name:'了解数字策展流程', level:2 },
+      { id:'sk-photogrammetry', name:'了解摄影测量法基础', level:2 },
+      { id:'sk-iiif', name:'了解IIIF图像互操作框架', level:1 },
+    ]
+  },
+  {
+    group: '🗣️ 学术表达能力',
+    skills: [
+      { id:'sk-eng-b2', name:'英语B2水平（硬性入学要求）', level:1 },
+      { id:'sk-de-b1', name:'德语B1水平', level:1 },
+      { id:'sk-writing', name:'学术写作基础（结构/引用/格式）', level:2 },
+      { id:'sk-present', name:'能做一个15分钟的学术展示', level:3 },
+      { id:'sk-zotero', name:'会用Zotero管理参考文献', level:1 },
+    ]
+  }
+];
+
+const TIMELINE = [
+  {
+    phase: '现在 → 入学前（建议6-12个月）',
+    items: ['英语B2证书——硬性要求，提前考好','Python基础：完成人文专属免费课程','HTML/CSS基础：FreeCodeCamp','Git基础：Learn Git Branching交互教程','读一本DH入门书（从Bloomsbury Handbook挑感兴趣的章节）','德语：至少A2，最好B1（德累斯顿工大可能有语言预备班）']
+  },
+  {
+    phase: '第1学期（冬季）· 30 LP',
+    items: ['DH 1.1 数字人文基础与方法（5 LP）→ 笔试90min','DH 2.1 人机交互基础（10 LP）→ 笔试90min','DH 2.2 需求与测试管理（10 LP）→ 笔试90min','DH 3.1 数字人文应用（5 LP）→ 自选考核','⚠️ 最重的学期！三门笔试同时进行，提前规划复习节奏']
+  },
+  {
+    phase: '第2学期（夏季）· 30 LP',
+    items: ['DH 1.2 跨学科项目开发（5 LP）→ 小组口试20min/人','DH 1.3 数字人文法律（5 LP）→ 笔试90min','DH 2.3 人文社科编程（5 LP）→ 综合作品100h','DH 3.2 网络化应用（5 LP）→ 自选考核','WP方向基础模块（10 LP）→ 4 SWS自选课程']
+  },
+  {
+    phase: '第3学期（冬季·流动窗口）· 30 LP',
+    items: ['DH 4.1 实践实习（15 LP）→ SLUB/国家艺术收藏馆/索布研究所等机构','WP方向深化模块（15 LP）→ 6 SWS自选课程','🌍 此时可出国交换——项目特意为此设计']
+  },
+  {
+    phase: '第4学期（夏季）· 30 LP',
+    items: ['DH 4.2 合作伙伴论坛（10 LP）→ 研究提案展示+作品集200h','硕士论文（20 LP）→ 撰写+答辩']
+  },
+];
+
+// ======================== ANNOTATION STORAGE ========================
+
+function getAnnotations() {
+  try { return JSON.parse(localStorage.getItem('dh_annotations') || '{}'); }
+  catch(e) { return {}; }
+}
+function saveAnnotations(a) { localStorage.setItem('dh_annotations', JSON.stringify(a)); }
+
+function getAnnotationsForTopic(topicId) {
+  const all = getAnnotations();
+  return all[topicId] || [];
+}
+function saveAnnotationsForTopic(topicId, anns) {
+  const all = getAnnotations();
+  all[topicId] = anns;
+  saveAnnotations(all);
+}
+
+function generateId() { return 'ann_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
+
+// ======================== STATE ========================
+
+let currentMode = 'knowledge';
+let currentTopicId = null;
+let currentAnnotationId = null; // which highlight's drawer is open
+let pendingSelection = null; // text selected for context menu
+let pendingSelectionRange = null;
+
+// ======================== RENDER TREE ========================
+
+function getProgress() {
+  try { return JSON.parse(localStorage.getItem('dh_tree_progress') || '{}'); }
+  catch(e) { return {}; }
+}
+function saveProgress(p) { localStorage.setItem('dh_tree_progress', JSON.stringify(p)); }
+
+function renderTree(filter = '') {
+  const nav = document.getElementById('tree-nav');
+  const progress = getProgress();
+  let html = '';
+  for (const branch of KNOWLEDGE_TREE) {
+    const branchDone = branch.children.filter(c => progress[c.id]).length;
+    const branchTotal = branch.children.length;
+    html += `<div class="tree-branch open" data-branch="${branch.id}">`;
+    html += `<div class="tree-branch-header" onclick="toggleBranch(this)">
+      <span class="arrow">▶</span><span class="icon">${branch.icon}</span>
+      <span class="label">${highlightMatch(branch.label, filter)}</span>
+      <span style="font-size:0.7rem;color:var(--text-secondary)">${branchDone}/${branchTotal}</span>
+    </div>`;
+    html += `<div class="tree-children">`;
+    for (const leaf of branch.children) {
+      const isDone = progress[leaf.id];
+      const dotClass = isDone ? 'done' : '';
+      const match = !filter || leaf.label.toLowerCase().includes(filter.toLowerCase()) ||
+        (leaf.content && leaf.content.toLowerCase().includes(filter.toLowerCase()));
+      if (filter && !match) continue;
+      html += `<div class="tree-leaf${currentTopicId===leaf.id?' active':''}" data-id="${leaf.id}" onclick="navigateTo('${leaf.id}')">
+        <span class="status-dot ${dotClass}"></span>
+        <span>${leaf.icon||''} ${highlightMatch(leaf.label, filter)}</span>
+        ${isDone ? '<span style="font-size:0.7rem">✅</span>' : ''}
+      </div>`;
+    }
+    html += `</div></div>`;
+  }
+  nav.innerHTML = html || '<div class="empty-state"><p>未找到匹配的知识点</p></div>';
+}
+
+function highlightMatch(text, filter) {
+  if (!filter) return text;
+  const re = new RegExp(`(${filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return text.replace(re, '<span class="highlight-match">$1</span>');
+}
+
+function toggleBranch(header) { header.parentElement.classList.toggle('open'); }
+
+// ======================== NAVIGATE ========================
+
+function navigateTo(id) {
+  closeDrawer();
+  currentTopicId = id;
+  let leaf = null;
+  for (const branch of KNOWLEDGE_TREE) {
+    for (const l of branch.children) { if (l.id === id) { leaf = l; break; } }
+    if (leaf) break;
+  }
+  if (!leaf) return;
+
+  document.getElementById('skills-panel').classList.remove('visible');
+  const content = document.getElementById('content');
+  const progress = getProgress();
+
+  let branchName = '';
+  for (const branch of KNOWLEDGE_TREE) {
+    if (branch.children.some(l => l.id === id)) { branchName = branch.label; break; }
+  }
+
+  // Build base content
+  let baseHtml = leaf.content || '<p>内容待补充</p>';
+
+  // Apply annotations (highlights + underlines) to the content
+  const annotations = getAnnotationsForTopic(id);
+  // Sort by length descending so longer matches are processed first (avoid nested spans)
+  const sorted = [...annotations].sort((a,b) => b.text.length - a.text.length);
+  for (const ann of sorted) {
+    if (ann.type === 'highlight') {
+      // Escape the text for regex and match in HTML content
+      const escaped = ann.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const cls = ann.id === currentAnnotationId ? 'user-highlight active-note' : 'user-highlight';
+      const replacement = `<span class="${cls}" data-anno-id="${ann.id}" onclick="event.stopPropagation();openAnnotation('${id}','${ann.id}')">${ann.text}</span>`;
+      baseHtml = baseHtml.replace(new RegExp(escaped, 'g'), replacement);
+    } else if (ann.type === 'underline') {
+      const escaped = ann.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const desc = ann.description || ann.url || '';
+      const replacement = `<span class="user-underline" data-anno-id="${ann.id}" data-url="${(ann.url||'').replace(/"/g,'&quot;')}" data-desc="${desc.replace(/"/g,'&quot;')}" onclick="event.stopPropagation();openUnderlineLink('${id}','${ann.id}')" title="${desc.replace(/"/g,'&quot;')}">${ann.text}</span>`;
+      baseHtml = baseHtml.replace(new RegExp(escaped, 'g'), replacement);
+    } else if (ann.type === 'style') {
+      const escaped = ann.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      let clsList = [];
+      if (ann.color) {
+        const colorClass = 'user-color-' + getColorClass(ann.color);
+        clsList.push(colorClass);
+      }
+      if (ann.bold) clsList.push('user-bold');
+      const cls = clsList.join(' ');
+      const replacement = `<span class="${cls}" data-anno-id="${ann.id}" onclick="event.stopPropagation();openStyleAnnotation('${id}','${ann.id}')">${ann.text}</span>`;
+      baseHtml = baseHtml.replace(new RegExp(escaped, 'g'), replacement);
+    }
+  }
+
+  let html = `<div id="breadcrumb">${branchName} / ${leaf.label}</div>`;
+  html += `<div class="fade-in" id="content-body">${baseHtml}</div>`;
+  html += `<div style="margin-top:24px;padding:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">`;
+  html += `<span style="font-size:0.8rem;color:var(--text-secondary);">标记学习状态：</span>`;
+  if (progress[id]) {
+    html += `<button onclick="markTopic('${id}', false)" style="padding:6px 14px;border:1px solid var(--success);border-radius:16px;background:var(--success);color:#fff;cursor:pointer;">✅ 已掌握（点击取消）</button>`;
+    html += `<span style="font-size:0.75rem;color:var(--text-secondary);">完成于 ${new Date(progress[id]).toLocaleDateString('zh-CN')}</span>`;
+  } else {
+    html += `<button onclick="markTopic('${id}', true)" style="padding:6px 14px;border:1px solid var(--border);border-radius:16px;background:var(--card-bg);color:var(--text-secondary);cursor:pointer;">标记为已掌握</button>`;
+  }
+  html += `</div>`;
+
+  content.innerHTML = html;
+  document.getElementById('skills-panel').classList.remove('visible');
+  renderTree();
+  updateLeafActive();
+  updateAnnoCount();
+  document.getElementById('main').scrollTop = 0;
+
+  // Re-attach contextmenu listener to content area
+  attachContextMenuListener();
+}
+
+function updateLeafActive() {
+  document.querySelectorAll('.tree-leaf').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === currentTopicId);
+  });
+}
+
+function markTopic(id, done) {
+  const progress = getProgress();
+  if (done) { progress[id] = Date.now(); }
+  else { delete progress[id]; }
+  saveProgress(progress);
+  if (currentTopicId === id && !document.getElementById('skills-panel').classList.contains('visible')) {
+    navigateTo(id);
+  } else {
+    renderTree();
+    if (document.getElementById('skills-panel').classList.contains('visible')) renderSkills();
+  }
+  document.getElementById('last-saved').textContent = '已保存 ' + new Date().toLocaleTimeString('zh-CN');
+}
+
+function updateAnnoCount() {
+  if (!currentTopicId) { document.getElementById('anno-count').textContent = ''; return; }
+  const anns = getAnnotationsForTopic(currentTopicId);
+  const hl = anns.filter(a => a.type === 'highlight').length;
+  const ul = anns.filter(a => a.type === 'underline').length;
+  const st = anns.filter(a => a.type === 'style').length;
+  let txt = '';
+  if (hl > 0) txt += `🖍️${hl}处高亮 `;
+  if (ul > 0) txt += `📌${ul}个链接 `;
+  if (st > 0) txt += `✏️${st}处样式`;
+  document.getElementById('anno-count').textContent = txt;
+}
+
+// ======================== CONTEXT MENU ========================
+
+function attachContextMenuListener() {
+  const contentBody = document.getElementById('content-body');
+  if (!contentBody) return;
+  contentBody.addEventListener('contextmenu', function(e) {
+    const sel = window.getSelection();
+    const text = sel.toString().trim();
+    if (!text || text.length === 0) {
+      // No selection — let the default browser menu work
+      // (but we suppressed it on #main — so check if it's inside content-body)
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    pendingSelection = text;
+    pendingSelectionRange = sel.getRangeAt(0).cloneRange();
+
+    const menu = document.getElementById('ctx-menu');
+    menu.style.display = 'block';
+    menu.style.left = Math.min(e.clientX, window.innerWidth - 190) + 'px';
+    menu.style.top = Math.min(e.clientY, window.innerHeight - 140) + 'px';
+
+    // Highlight the range temporarily
+    // (The selection is already visible via browser default)
+  });
+}
+
+// Allow context menu on #main for text selection
+document.getElementById('main').addEventListener('contextmenu', function(e) {
+  const sel = window.getSelection();
+  const text = sel.toString().trim();
+  if (!text || text.length === 0) {
+    // Check if right-click is on the bottom tip text
+    return; // let it pass through to show browser menu
+  }
+  // If there's a selection, the contentBody handler will deal with it
+  // If right-click is outside contentBody, still try to handle it
+  const contentBody = document.getElementById('content-body');
+  if (contentBody && contentBody.contains(e.target)) {
+    // Already handled by contentBody listener
+  } else if (text) {
+    e.preventDefault();
+    pendingSelection = text;
+    pendingSelectionRange = sel.getRangeAt(0).cloneRange();
+    const menu = document.getElementById('ctx-menu');
+    menu.style.display = 'block';
+    menu.style.left = Math.min(e.clientX, window.innerWidth - 190) + 'px';
+    menu.style.top = Math.min(e.clientY, window.innerHeight - 140) + 'px';
+  }
+});
+
+document.getElementById('ctx-menu').addEventListener('click', function(e) {
+  const item = e.target.closest('.ctx-item');
+  if (!item) return;
+  const action = item.dataset.action;
+  hideContextMenu();
+
+  if (action === 'highlight') {
+    addHighlight();
+  } else if (action === 'underline') {
+    openLinkDialog();
+  } else if (action === 'copy') {
+    if (pendingSelection) {
+      navigator.clipboard.writeText(pendingSelection).then(() => toast('📋 已复制到剪贴板'));
+    }
+  } else if (action === 'color-red') {
+    addStyleAnnotation('#c0392b', null);
+  } else if (action === 'color-blue') {
+    addStyleAnnotation('#2471a3', null);
+  } else if (action === 'color-green') {
+    addStyleAnnotation('#1e8449', null);
+  } else if (action === 'color-orange') {
+    addStyleAnnotation('#d35400', null);
+  } else if (action === 'color-purple') {
+    addStyleAnnotation('#7d3c98', null);
+  } else if (action === 'bold') {
+    addStyleAnnotation(null, true);
+  } else if (action === 'reset-style') {
+    removeStyleAnnotations();
+  }
+});
+
+function hideContextMenu() {
+  document.getElementById('ctx-menu').style.display = 'none';
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#ctx-menu')) {
+    hideContextMenu();
+  }
+  if (!e.target.closest('#note-ctx-menu')) {
+    hideNoteContextMenu();
+  }
+});
+
+// ======================== NOTE CONTEXT MENU ========================
+
+function showNoteContextMenu(e) {
+  e.preventDefault();
+  const menu = document.getElementById('note-ctx-menu');
+  menu.style.display = 'block';
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 180) + 'px';
+  menu.style.top = Math.min(e.clientY, window.innerHeight - 200) + 'px';
+}
+
+function hideNoteContextMenu() {
+  document.getElementById('note-ctx-menu').style.display = 'none';
+}
+
+function execNoteCmd(cmd, value) {
+  document.execCommand(cmd, false, value || null);
+  const editor = document.getElementById('note-editor');
+  if (editor) editor.focus();
+}
+
+document.getElementById('note-ctx-menu').addEventListener('click', function(e) {
+  const item = e.target.closest('.nctx-item');
+  if (!item) return;
+  const action = item.dataset.action;
+  hideNoteContextMenu();
+
+  if (action === 'note-color-red') {
+    document.execCommand('foreColor', false, '#c0392b');
+  } else if (action === 'note-color-blue') {
+    document.execCommand('foreColor', false, '#2471a3');
+  } else if (action === 'note-color-green') {
+    document.execCommand('foreColor', false, '#1e8449');
+  } else if (action === 'note-color-orange') {
+    document.execCommand('foreColor', false, '#d35400');
+  } else if (action === 'note-color-purple') {
+    document.execCommand('foreColor', false, '#7d3c98');
+  } else if (action === 'note-bold') {
+    document.execCommand('bold', false, null);
+  } else if (action === 'note-italic') {
+    document.execCommand('italic', false, null);
+  } else if (action === 'note-clear') {
+    document.execCommand('removeFormat', false, null);
+  }
+  // Refocus the editor
+  const editor = document.getElementById('note-editor');
+  if (editor) editor.focus();
+});
+
+// ======================== ADD HIGHLIGHT ========================
+
+function addHighlight() {
+  if (!pendingSelection || !currentTopicId) return;
+  const text = pendingSelection;
+  const anns = getAnnotationsForTopic(currentTopicId);
+  // Check duplicate
+  if (anns.some(a => a.text === text && a.type === 'highlight')) {
+    toast('⚠️ 这段文字已经高亮过了');
+    return;
+  }
+  const ann = {
+    id: generateId(),
+    type: 'highlight',
+    text: text,
+    note: '',
+    color: '#fef3b4',
+    createdAt: Date.now()
+  };
+  anns.push(ann);
+  saveAnnotationsForTopic(currentTopicId, anns);
+  // Re-render to show the highlight
+  navigateTo(currentTopicId);
+  // Auto-open the annotation drawer for this new highlight
+  setTimeout(() => openAnnotation(currentTopicId, ann.id), 100);
+  toast('🖍️ 已高亮！点击高亮区域即可添加批注');
+}
+
+// ======================== STYLE ANNOTATION (color + bold) ========================
+
+function addStyleAnnotation(color, bold) {
+  if (!pendingSelection || !currentTopicId) return;
+  const text = pendingSelection;
+  let anns = getAnnotationsForTopic(currentTopicId);
+
+  // Check if there's already a 'style' annotation for this exact text
+  let existing = anns.find(a => a.text === text && a.type === 'style');
+  if (existing) {
+    // Update existing style annotation
+    if (color !== null) existing.color = color;
+    if (bold !== null) existing.bold = bold;
+    saveAnnotationsForTopic(currentTopicId, anns);
+    navigateTo(currentTopicId);
+    const colorName = color ? getColorName(color) : '';
+    const desc = [colorName, bold ? '加粗' : ''].filter(Boolean).join(' + ') || '默认';
+    toast('✏️ 样式已更新：' + desc);
+    return;
+  }
+
+  // Check if text is already highlighted — if so, still add style (allow overlap)
+  const ann = {
+    id: generateId(),
+    type: 'style',
+    text: text,
+    note: '',
+    color: color || null,
+    bold: bold || false,
+    createdAt: Date.now()
+  };
+  anns.push(ann);
+  saveAnnotationsForTopic(currentTopicId, anns);
+  navigateTo(currentTopicId);
+  const colorName = color ? getColorName(color) : '';
+  const desc = [colorName, bold ? '加粗' : ''].filter(Boolean).join(' + ') || '默认';
+  toast('✏️ 样式已应用：' + desc);
+}
+
+function removeStyleAnnotations() {
+  if (!pendingSelection || !currentTopicId) return;
+  const text = pendingSelection;
+  let anns = getAnnotationsForTopic(currentTopicId);
+  const before = anns.length;
+  anns = anns.filter(a => !(a.text === text && a.type === 'style'));
+  saveAnnotationsForTopic(currentTopicId, anns);
+  if (anns.length < before) {
+    navigateTo(currentTopicId);
+    toast('↩️ 样式已还原');
+  } else {
+    toast('⚠️ 未找到该文字的样式标注');
+  }
+}
+
+function getColorName(hex) {
+  const map = { '#c0392b': '红色', '#2471a3': '蓝色', '#1e8449': '绿色', '#d35400': '橙色', '#7d3c98': '紫色' };
+  return map[hex] || '';
+}
+
+function getColorClass(hex) {
+  const map = { '#c0392b': 'red', '#2471a3': 'blue', '#1e8449': 'green', '#d35400': 'orange', '#7d3c98': 'purple' };
+  return map[hex] || 'red';
+}
+
+// ======================== ADD UNDERLINE / LINK ========================
+
+function openLinkDialog() {
+  if (!pendingSelection || !currentTopicId) return;
+  document.getElementById('link-dialog-preview').textContent = '📎 ' + pendingSelection;
+  document.getElementById('link-dialog-url').value = '';
+  document.getElementById('link-dialog-desc').value = '';
+  document.getElementById('link-dialog-overlay').classList.add('show');
+  document.getElementById('link-dialog-url').focus();
+}
+
+function closeLinkDialog() {
+  document.getElementById('link-dialog-overlay').classList.remove('show');
+}
+
+function confirmLink() {
+  const url = document.getElementById('link-dialog-url').value.trim();
+  const desc = document.getElementById('link-dialog-desc').value.trim();
+  if (!url && !desc) {
+    toast('⚠️ 请至少填写链接地址或备注说明');
+    return;
+  }
+  if (!pendingSelection || !currentTopicId) return;
+  const anns = getAnnotationsForTopic(currentTopicId);
+  const ann = {
+    id: generateId(),
+    type: 'underline',
+    text: pendingSelection,
+    url: url,
+    description: desc,
+    createdAt: Date.now()
+  };
+  anns.push(ann);
+  saveAnnotationsForTopic(currentTopicId, anns);
+  closeLinkDialog();
+  navigateTo(currentTopicId);
+  toast('📌 链接已添加！点击蓝色下划线即可跳转');
+}
+
+document.getElementById('link-dialog-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeLinkDialog();
+});
+
+// ======================== ANNOTATION DRAWER ========================
+
+function openAnnotation(topicId, annoId) {
+  currentAnnotationId = annoId;
+  const anns = getAnnotationsForTopic(topicId);
+  const ann = anns.find(a => a.id === annoId);
+  if (!ann) return;
+
+  const drawer = document.getElementById('anno-drawer');
+  const body = document.getElementById('anno-drawer-body');
+  const footer = document.getElementById('anno-drawer-footer');
+
+  body.innerHTML = `
+    <div class="anno-quote">${escapeHtml(ann.text)}</div>
+    <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:var(--text-secondary);">📝 你的批注（选中文字右键可改颜色/加粗/斜体）</label>
+    <div id="note-editor-toolbar">
+      <button title="红色" onclick="execNoteCmd('foreColor','#c0392b')"><span style="color:#c0392b;">●</span></button>
+      <button title="蓝色" onclick="execNoteCmd('foreColor','#2471a3')"><span style="color:#2471a3;">●</span></button>
+      <button title="绿色" onclick="execNoteCmd('foreColor','#1e8449')"><span style="color:#1e8449;">●</span></button>
+      <button title="橙色" onclick="execNoteCmd('foreColor','#d35400')"><span style="color:#d35400;">●</span></button>
+      <button title="紫色" onclick="execNoteCmd('foreColor','#7d3c98')"><span style="color:#7d3c98;">●</span></button>
+      <span class="toolbar-divider"></span>
+      <button title="加粗" onclick="execNoteCmd('bold')"><b>B</b></button>
+      <button title="斜体" onclick="execNoteCmd('italic')"><i>I</i></button>
+      <span class="toolbar-divider"></span>
+      <button title="清除格式" onclick="execNoteCmd('removeFormat')" style="font-size:0.7rem;">✕</button>
+    </div>
+    <div id="note-editor" contenteditable="true" placeholder="在这里写你的批注、想法、问题……">${ann.note || ''}</div>
+    <div class="anno-meta">创建于 ${new Date(ann.createdAt).toLocaleString('zh-CN')}${ann.note ? ' · 有批注' : ' · 暂无批注，点击右侧编辑区添加'}</div>
+  `;
+  footer.style.display = 'flex';
+  drawer.classList.add('open');
+
+  // Attach right-click handler to the editor
+  setTimeout(() => {
+    const editor = document.getElementById('note-editor');
+    if (editor) {
+      editor.addEventListener('contextmenu', showNoteContextMenu);
+    }
+  }, 50);
+
+  // Update active state on the highlight in the main content
+  document.querySelectorAll('.user-highlight').forEach(el => el.classList.remove('active-note'));
+  const activeEl = document.querySelector(`.user-highlight[data-anno-id="${annoId}"]`);
+  if (activeEl) { activeEl.classList.add('active-note'); activeEl.scrollIntoView({behavior:'smooth',block:'center'}); }
+}
+
+function saveAnnotationNote() {
+  if (!currentTopicId || !currentAnnotationId) return;
+  const editor = document.getElementById('note-editor');
+  if (!editor) return;
+  const noteHtml = editor.innerHTML.trim();
+  const anns = getAnnotationsForTopic(currentTopicId);
+  const ann = anns.find(a => a.id === currentAnnotationId);
+  if (ann) {
+    ann.note = noteHtml;
+    saveAnnotationsForTopic(currentTopicId, anns);
+    // Update the meta line
+    const metaEl = document.querySelector('#anno-drawer-body .anno-meta');
+    if (metaEl) {
+      const hasNote = noteHtml && noteHtml !== '<br>' && noteHtml.length > 0;
+      metaEl.textContent = `创建于 ${new Date(ann.createdAt).toLocaleString('zh-CN')}${hasNote ? ' · 有批注' : ' · 暂无批注'}`;
+    }
+    toast('💾 批注已保存');
+  }
+}
+
+function deleteAnnotation() {
+  if (!currentTopicId || !currentAnnotationId) return;
+  if (!confirm('确定要删除这条标注和批注吗？')) return;
+  let anns = getAnnotationsForTopic(currentTopicId);
+  anns = anns.filter(a => a.id !== currentAnnotationId);
+  saveAnnotationsForTopic(currentTopicId, anns);
+  closeDrawer();
+  navigateTo(currentTopicId);
+  toast('🗑️ 已删除');
+}
+
+function closeDrawer() {
+  currentAnnotationId = null;
+  document.getElementById('anno-drawer').classList.remove('open');
+  document.getElementById('anno-drawer-footer').style.display = 'none';
+  document.getElementById('anno-drawer-body').innerHTML = `
+    <div class="empty-drawer">
+      <div class="big-icon">💬</div>
+      <p>选中文字后右键"高亮标记"<br>然后点击高亮区域即可在此写批注</p>
+    </div>`;
+  // Remove active state
+  document.querySelectorAll('.user-highlight.active-note').forEach(el => el.classList.remove('active-note'));
+}
+
+// ======================== UNDERLINE CLICK ========================
+
+function openUnderlineLink(topicId, annoId) {
+  const anns = getAnnotationsForTopic(topicId);
+  const ann = anns.find(a => a.id === annoId);
+  if (!ann) return;
+
+  if (ann.url && ann.url.match(/^https?:\/\//)) {
+    window.open(ann.url, '_blank');
+  } else if (ann.url) {
+    // It's a text-based location like "第3章第15页" or "视频 12:30"
+    const drawer = document.getElementById('anno-drawer');
+    const body = document.getElementById('anno-drawer-body');
+    const footer = document.getElementById('anno-drawer-footer');
+    body.innerHTML = `
+      <div class="anno-quote">📌 ${escapeHtml(ann.text)}</div>
+      <div class="card"><h4>🔗 定位信息</h4><p><strong>位置：</strong>${escapeHtml(ann.url)}</p>${ann.description ? `<p><strong>备注：</strong>${escapeHtml(ann.description)}</p>` : ''}</div>
+      <div class="anno-meta">创建于 ${new Date(ann.createdAt).toLocaleString('zh-CN')}</div>
+    `;
+    footer.style.display = 'none';
+    drawer.classList.add('open');
+  } else if (ann.description) {
+    const drawer = document.getElementById('anno-drawer');
+    const body = document.getElementById('anno-drawer-body');
+    const footer = document.getElementById('anno-drawer-footer');
+    body.innerHTML = `
+      <div class="anno-quote">📌 ${escapeHtml(ann.text)}</div>
+      <div class="card"><p>${escapeHtml(ann.description)}</p></div>
+      <div class="anno-meta">创建于 ${new Date(ann.createdAt).toLocaleString('zh-CN')}</div>
+    `;
+    footer.style.display = 'none';
+    drawer.classList.add('open');
+  }
+}
+
+// ======================== STYLE ANNOTATION CLICK ========================
+
+function openStyleAnnotation(topicId, annoId) {
+  const anns = getAnnotationsForTopic(topicId);
+  const ann = anns.find(a => a.id === annoId);
+  if (!ann) return;
+
+  currentTopicId = topicId;
+  currentAnnotationId = annoId;
+
+  const drawer = document.getElementById('anno-drawer');
+  const body = document.getElementById('anno-drawer-body');
+  const footer = document.getElementById('anno-drawer-footer');
+
+  const colorName = ann.color ? getColorName(ann.color) : '默认';
+
+  body.innerHTML = `
+    <div class="anno-quote">✏️ ${escapeHtml(ann.text)}</div>
+    <div class="card"><h4>🎨 当前样式</h4><p>颜色：${colorName} · 粗细：${ann.bold ? '<strong>加粗</strong>' : '常规'}</p></div>
+    <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:var(--text-secondary);">📝 你的批注（选中文字右键可改颜色/加粗/斜体）</label>
+    <div id="note-editor-toolbar">
+      <button title="红色" onclick="execNoteCmd('foreColor','#c0392b')"><span style="color:#c0392b;">●</span></button>
+      <button title="蓝色" onclick="execNoteCmd('foreColor','#2471a3')"><span style="color:#2471a3;">●</span></button>
+      <button title="绿色" onclick="execNoteCmd('foreColor','#1e8449')"><span style="color:#1e8449;">●</span></button>
+      <button title="橙色" onclick="execNoteCmd('foreColor','#d35400')"><span style="color:#d35400;">●</span></button>
+      <button title="紫色" onclick="execNoteCmd('foreColor','#7d3c98')"><span style="color:#7d3c98;">●</span></button>
+      <span class="toolbar-divider"></span>
+      <button title="加粗" onclick="execNoteCmd('bold')"><b>B</b></button>
+      <button title="斜体" onclick="execNoteCmd('italic')"><i>I</i></button>
+      <span class="toolbar-divider"></span>
+      <button title="清除格式" onclick="execNoteCmd('removeFormat')" style="font-size:0.7rem;">✕</button>
+    </div>
+    <div id="note-editor" contenteditable="true" placeholder="在这里写你的批注、想法……">${ann.note || ''}</div>
+    <div class="anno-meta">创建于 ${new Date(ann.createdAt).toLocaleString('zh-CN')}${ann.note ? ' · 有批注' : ' · 暂无批注'}</div>
+  `;
+  footer.style.display = 'flex';
+  drawer.classList.add('open');
+
+  // Attach right-click handler to the editor
+  setTimeout(() => {
+    const editor = document.getElementById('note-editor');
+    if (editor) {
+      editor.addEventListener('contextmenu', showNoteContextMenu);
+    }
+  }, 50);
+
+  // Update active state on the styled element
+  document.querySelectorAll('.user-highlight.active-note').forEach(el => el.classList.remove('active-note'));
+  const activeEl = document.querySelector(`[data-anno-id="${annoId}"]`);
+  if (activeEl) { activeEl.scrollIntoView({behavior:'smooth',block:'center'}); }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ======================== SEARCH ========================
+
+function searchTree() {
+  const q = document.getElementById('search-box').value.trim();
+  renderTree(q);
+  if (q) {
+    document.querySelectorAll('.tree-branch').forEach(b => b.classList.add('open'));
+  }
+}
+
+// ======================== SKILLS PANEL ========================
+
+function renderSkills() {
+  const panel = document.getElementById('skills-panel');
+  const progress = getProgress();
+  let totalSkills = 0, doneSkills = 0;
+  SKILLS_LIST.forEach(g => { totalSkills += g.skills.length; doneSkills += g.skills.filter(s => progress['sk_'+s.id]).length; });
+  const pct = totalSkills > 0 ? Math.round(doneSkills / totalSkills * 100) : 0;
+
+  let html = `<div class="fade-in">`;
+  html += `<h2>✅ 技能清单 · 螺旋式上升</h2>`;
+  html += `<div class="progress-stat">
+    <div class="stat"><div class="num">${doneSkills}/${totalSkills}</div><div class="lbl">已掌握</div></div>
+    <div class="stat"><div class="num">${pct}%</div><div class="lbl">完成率</div></div>
+    <div class="stat"><div class="num">${Math.max(0, 5 - Math.floor(pct/20))}</div><div class="lbl">剩余轮次</div></div>
+  </div>`;
+  html += `<div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>`;
+
+  if (doneSkills > 0) {
+    const oldest = getOldestReviewed(progress);
+    html += `<div id="review-nudge">🔄 <strong>螺旋复习提醒：</strong>${oldest}</div>`;
+  }
+
+  for (const group of SKILLS_LIST) {
+    const groupDone = group.skills.filter(s => progress['sk_'+s.id]).length;
+    html += `<div class="skill-group"><h3>${group.group} <span style="font-size:0.75rem;color:var(--text-secondary)">${groupDone}/${group.skills.length}</span></h3>`;
+    for (const skill of group.skills) {
+      const sid = 'sk_'+skill.id;
+      const isChecked = progress[sid];
+      html += `<div class="skill-item${isChecked?' checked':''}" onclick="toggleSkill('${sid}')">
+        <div class="check-box">${isChecked?'✓':''}</div>
+        <span class="skill-name">${skill.name}</span>
+        <span class="skill-level lv${skill.level}">${LEVEL_LABELS[skill.level]}</span>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  html += `</div>`;
+  panel.innerHTML = html;
+  document.getElementById('content').innerHTML = '';
+  document.getElementById('skills-panel').classList.remove('visible');
+  panel.classList.add('visible');
+  closeDrawer();
+}
+
+const LEVEL_LABELS = { 1:'🌱 初识', 2:'🌿 理解', 3:'🌳 应用', 4:'🍎 熟练', 5:'⭐ 精通' };
+
+function getOldestReviewed(progress) {
+  let oldest = null, oldestTime = Infinity;
+  for (const [k, v] of Object.entries(progress)) {
+    if (k.startsWith('sk_') && v < oldestTime) { oldest = k; oldestTime = v; }
+  }
+  if (!oldest) return '所有技能都已标记！开始第二轮复习吧 🎉';
+  const skillName = findSkillName(oldest);
+  const daysAgo = Math.round((Date.now() - oldestTime) / 86400000);
+  return `"${skillName}" 已 ${daysAgo} 天未复习，今天重新过一遍吧！`;
+}
+
+function findSkillName(sid) {
+  for (const g of SKILLS_LIST) {
+    for (const s of g.skills) { if ('sk_'+s.id === sid) return s.name; }
+  }
+  return sid;
+}
+
+function toggleSkill(sid) {
+  const progress = getProgress();
+  if (progress[sid]) { delete progress[sid]; }
+  else { progress[sid] = Date.now(); }
+  saveProgress(progress);
+  renderSkills();
+  renderTree();
+  document.getElementById('last-saved').textContent = '已保存 ' + new Date().toLocaleTimeString('zh-CN');
+}
+
+// ======================== TIMELINE ========================
+
+function renderTimeline() {
+  const content = document.getElementById('content');
+  document.getElementById('skills-panel').classList.remove('visible');
+  closeDrawer();
+  let html = `<div class="fade-in"><h2>📅 学习时间线</h2>`;
+  for (const phase of TIMELINE) {
+    html += `<div class="card"><h3>${phase.phase}</h3><ul>`;
+    for (const item of phase.items) { html += `<li>${item}</li>`; }
+    html += `</ul></div>`;
+  }
+  html += `<div class="card" style="border-left:4px solid var(--accent);">
+    <h4>🏁 毕业总要求</h4>
+    <p>120 ECTS = 10个必修模块(75 LP) + 1个选修方向(25 LP) + 硕士论文(20 LP)</p>
+    <p>所有考试类型：3-4门笔试(90min) + 1次口试(20min) + 1个编程作品(100h) + 2个作品集(100h+200h) + 1段实习 + 1篇论文</p>
+  </div>`;
+  html += `</div>`;
+  content.innerHTML = html;
+  currentTopicId = null;
+  renderTree();
+  updateAnnoCount();
+}
+
+// ======================== NOTEBOOK ========================
+
+const PYTHON_NOTES = [
+  {
+    group: '"动作"关键词（控制者）',
+    icon: '⚡',
+    desc: '这些是给 Python 下命令的词，告诉它要做什么。',
+    items: [
+      { term: 'def', detail: '<b>def</b> 是 <b>define</b>（定义）的缩写。<br><br>用来<b>创建一个函数</b>——把一段代码打包成一个可重复使用的"动作"。<br><br><span style="color:#2471a3;">📌 类比：</span>就像你写了一个"做饭"的食谱卡片，以后说"做饭"就自动执行卡片上的步骤。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">def greet(name):\n    print("Hello, " + name)</pre>' },
+      { term: 'return', detail: '<b>return</b> 是函数的"出口"。<br><br>函数执行完后，<b>把结果送回去</b>给调用它的地方。如果没有 return，函数默认返回 <code>None</code>（什么都没有）。<br><br><span style="color:#2471a3;">📌 类比：</span>你让快递员送包裹，他到了之后把包裹交给你——这个"递交"的动作就是 return。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">def add(a, b):\n    return a + b  # 把结果送回去\n\nresult = add(3, 5)  # result = 8</pre>' },
+      { term: 'import', detail: '<b>import</b> 就是"搬进来"。<br><br>Python 有很多<b>现成的工具包</b>（叫模块/module），你需要先用 import 把它们搬进你的程序才能使用。<br><br><span style="color:#2471a3;">📌 类比：</span>你的厨房默认只有基本工具。要做蛋糕，你需要从储藏室<em>搬进来</em>打蛋器和烤箱手套。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">import math        # 搬进整个数学工具包\nprint(math.sqrt(16))  # 4.0\n\nfrom math import pi  # 只搬 pi 这一个东西\nprint(pi)  # 3.14159...</pre>' },
+      { term: 'from', detail: '<b>from</b> 配合 import 使用，意思是"从……里面"。<br><br>它让你<b>只从模块中选取一个或几个特定工具</b>，而不是把整个模块都搬进来。<br><br><span style="color:#2471a3;">📌 类比：</span>你不需要把整个五金店搬回家，只需要"从五金店<em>拿</em>一把锤子"。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">from math import sqrt, pow\n# 只搬 sqrt 和 pow，不搬其他\nprint(sqrt(25))  # 5.0</pre>' },
+      { term: 'as', detail: '<b>as</b> 是"取外号"。<br><br>给导入的模块或函数起一个<b>简短的别名</b>，方便后面使用。<br><br><span style="color:#2471a3;">📌 类比：</span>你朋友叫"Alexander"，你叫他"Alex"——省时间。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">import numpy as np\n# 现在写 np 就代表 numpy\narr = np.array([1, 2, 3])</pre>' }
+    ]
+  },
+  {
+    group: '"数据"容器（变量与参数）',
+    icon: '📦',
+    desc: '这些是装数据的盒子——名字由你取，内容你来放。',
+    items: [
+      { term: '变量名（如 a, b, x, result）', detail: '<b>变量</b>就是一个<b>带标签的盒子</b>，用来存放数据。<br><br>名字由你自己取（建议有意义），里面可以放数字、文字、列表……几乎任何东西。<br><br><span style="color:#2471a3;">📌 类比：</span>你有一个盒子，上面贴着标签"玩具"，里面放了积木。下次你说"拿玩具来"，你就知道去哪个盒子找。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">x = 42          # x 这个盒子装着数字 42\nname = "Youcy"  # name 这个盒子装着文字\nresult = x + 8  # result 这个盒子装着计算结果 50</pre><br><span style="color:#c0392b;">⚠️ 注意：</span>变量名不能以数字开头、不能包含空格、不能使用 Python 的保留字（如 def、if）。' },
+      { term: '参数（如 greet(name) 中的 name）', detail: '<b>参数</b>是函数定义时写在括号里的<b>占位符</b>。<br><br>它告诉函数："你会收到一个数据，先叫它这个名字，等调用时再告诉我实际是什么。"<br><br><span style="color:#2471a3;">📌 类比：</span>你写了一张通用贺卡模板，开头是"亲爱的 [名字]"。这个 [名字] 就是参数——每次寄给不同人时填进去。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">def greet(name):   # name 是参数（占位符）\n    print("Hi, " + name)\n\ngreet("Youcy")  # "Youcy" 是实际传入的值（实参）\ngreet("Alex")   # "Alex" 是另一个实参</pre>' },
+      { term: '赋值 =', detail: '<b>=</b> 在 Python 里不是"等于"，而是<b>"把右边的值放进左边的变量"</b>。<br><br><span style="color:#2471a3;">📌 类比：</span>不是数学里的天平（左边等于右边），而是<b>箭头 ←</b>：把右边的值装进左边的盒子。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">x = 10      # 把 10 放进盒子 x\nx = x + 5   # 先算右边 x+5=15，再把 15 放进盒子 x\n# 现在 x = 15</pre>' }
+    ]
+  },
+  {
+    group: '"现成"工具（内置函数）',
+    icon: '🧰',
+    desc: 'Python 默认自带的函数，不需要 import，拿来就用。',
+    items: [
+      { term: 'print()', detail: '<b>print()</b> 是最常用的函数——<b>把东西显示在屏幕上</b>。<br><br><span style="color:#2471a3;">📌 类比：</span>你写了一张便签，print() 就是把它贴在公告栏上让大家看到。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">print("Hello World")   # 显示：Hello World\nprint(42)              # 显示：42\nprint("答案:", 42)     # 显示：答案: 42</pre>' },
+      { term: 'len()', detail: '<b>len()</b> 是 length（长度）的缩写。<br><br>用来<b>数一数一个东西里有多少个元素</b>——字符串有几个字符、列表有几个项目。<br><br><span style="color:#2471a3;">📌 类比：</span>你有一串珍珠项链，len() 就是数一下有多少颗珠子。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">len("Hello")     # 5（5 个字符）\nlen([1,2,3,4])  # 4（4 个元素）</pre>' },
+      { term: 'type()', detail: '<b>type()</b> 用来<b>查看一个东西是什么类型</b>。<br><br>Python 里有很多数据类型：整数(int)、字符串(str)、列表(list)、字典(dict)……type() 告诉你面前的是什么。<br><br><span style="color:#2471a3;">📌 类比：</span>你打开一个没有标签的罐头，type() 告诉你里面是豆子还是番茄酱。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">type(42)          # &lt;class \'int\'&gt;\ntype("hello")     # &lt;class \'str\'&gt;\ntype([1, 2, 3])   # &lt;class \'list\'&gt;</pre>' },
+      { term: 'input()', detail: '<b>input()</b> 用来<b>从键盘获取用户输入</b>。<br><br>程序会暂停，等待用户敲入文字并按回车。返回的是字符串类型。<br><br><span style="color:#2471a3;">📌 类比：</span>你递出一张空白表格给别人填写——他们写了什么，你就收到什么。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">name = input("你叫什么？")\nprint("你好，" + name)</pre>' },
+      { term: 'range()', detail: '<b>range()</b> 生成<b>一串连续的数字</b>，常配合 for 循环使用。<br><br><span style="color:#2471a3;">📌 类比：</span>一本日历，告诉你从第1天到第10天每一天的日期。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">range(5)      # 0, 1, 2, 3, 4（从 0 开始，共 5 个）\nrange(2, 6)   # 2, 3, 4, 5（从 2 到 5）\n\nfor i in range(5):\n    print(i)   # 打印 0 1 2 3 4</pre>' },
+      { term: 'int() / str() / float()', detail: '<b>类型转换三兄弟：</b><br><br>• <b>int()</b>：把东西变成<b>整数</b>（去掉小数部分）<br>• <b>str()</b>：把东西变成<b>字符串</b>（文本）<br>• <b>float()</b>：把东西变成<b>小数</b>（浮点数）<br><br><span style="color:#2471a3;">📌 类比：</span>把"5个苹果"里的数字 5 提取出来（int），或者把数字 5 写成文字"五"（str）。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">int("42")       # 42（字符串变整数）\nstr(100)        # "100"（数字变字符串）\nfloat("3.14")   # 3.14（字符串变小數）</pre>' }
+    ]
+  },
+  {
+    group: '"数学"工具（运算符与模块内容）',
+    icon: '🔢',
+    desc: '做数学运算的符号和函数——加减乘除、开方、幂运算等。',
+    items: [
+      { term: '+  -  *  /', detail: '<b>四则运算符：</b><br><br>• <b>+</b> 加法：<code>3 + 2 → 5</code><br>• <b>-</b> 减法：<code>3 - 2 → 1</code><br>• <b>*</b> 乘法：<code>3 * 2 → 6</code><br>• <b>/</b> 除法：<code>3 / 2 → 1.5</code>（<b>总是返回小数</b>）<br><br>还有三个特殊变体：<br>• <b>//</b> 整除（向下取整）：<code>7 // 2 → 3</code>（砍掉小数部分）<br>• <b>%</b> 取余数：<code>7 % 2 → 1</code>（7除以2余1）<br>• <b>**</b> 幂运算：<code>2 ** 3 → 8</code>（2的3次方）' },
+      { term: 'sqrt()', detail: '<b>sqrt()</b> 是 square root（平方根）。<br><br>它来自 <code>math</code> 模块，需要先 <code>import math</code> 才能使用。<br><br><span style="color:#2471a3;">📌 类比：</span>给你一个正方形，面积为 16，边长是多少？sqrt(16) = 4。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">import math\nmath.sqrt(16)   # 4.0\nmath.sqrt(25)   # 5.0\nmath.sqrt(2)    # 1.414...（根号2）</pre>' },
+      { term: 'pow()', detail: '<b>pow()</b> 是 power（幂）。<br><br><code>pow(a, b)</code> 就是 a 的 b 次方，等价于 <code>a ** b</code>。<br><br><span style="color:#2471a3;">📌 类比：</span>一个细菌每20分钟分裂一次，3小时后分裂了多少次？pow(2, 9) = 512个细菌。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">pow(2, 3)    # 8（2的3次方）\npow(5, 2)    # 25（5的2次方 = 5²）\npow(10, 6)   # 1000000（10的6次方 = 一百万）</pre>' },
+      { term: 'abs() / round()', detail: '<b>abs()</b> 取<b>绝对值</b>（去掉负号）：<code>abs(-5) → 5</code><br><br><b>round()</b> 对数字<b>四舍五入</b>：<br><code>round(3.14159, 2) → 3.14</code>（保留2位小数）' }
+    ]
+  },
+  {
+    group: '"特殊"标点符号（格式规则）',
+    icon: '🔣',
+    desc: 'Python 语法中的标点符号——不是装饰，每个都有严格含义。',
+    items: [
+      { term: '冒号 :', detail: '<b>冒号 :</b> 表示"下面是我的内容"。<br><br>用在 if、for、while、def、class 等语句后面，告诉 Python：<b>接下来缩进的部分属于我</b>。<br><br><span style="color:#2471a3;">📌 类比：</span>你写一封信，开头"亲爱的朋友<b>：</b>"——冒号后面才是信的正文。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">if x > 10:          # ← 冒号！\n    print("x很大")  # 缩进，属于 if 的</pre>' },
+      { term: '括号 ()', detail: '<b>括号 ()</b> 有四个用途：<br><br>1. <b>调用函数</b>：<code>print("hi")</code>——括号里放参数<br>2. <b>定义函数</b>：<code>def f(x):</code>——括号里放参数名<br>3. <b>控制运算顺序</b>：<code>(1+2)*3 → 9</code> 而不是 <code>1+2*3 → 7</code><br>4. <b>创建元组</b>：<code>(1, 2, 3)</code>——不可修改的序列<br><br><span style="color:#c0392b;">⚠️ 常见错误：</span>忘记写括号就调用不了函数——<code>print</code> 和 <code>print()</code> 是完全不同的东西。' },
+      { term: '赋值 =', detail: '<b>=</b> 是<b>赋值</b>，不是数学里的"等于"。<br><br>它把右边的值放进左边的变量。判断是否相等用 <b>==</b>（两个等号）。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">x = 10        # 赋值：把 10 放进 x\nx == 10       # 判断：x 等于 10 吗？→ True\nx = x + 1     # 先算右边 (11)，再把 11 放进 x</pre>' },
+      { term: '缩进（Indent）', detail: '<b>缩进</b>是 Python 最独特的语法规则——<b>用空格定义代码块的边界</b>。<br><br>大多数语言用花括号 {}，Python 用缩进。同一层级的代码<b>缩进必须一致</b>（通常 4 个空格）。<br><br><span style="color:#2471a3;">📌 类比：</span>一个文件夹套一个文件夹——缩进就是文件层级。外层是抽屉，缩进一层是抽屉里的盒子，再缩进是盒子里的东西。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">def outer():        # 第 0 层\n    print("外")     # 第 1 层（缩进 4 格）\n    if True:        # 第 1 层\n        print("内") # 第 2 层（缩进 8 格）</pre><br><span style="color:#c0392b;">⚠️ 混用 Tab 和空格会导致缩进错误（IndentationError）！</span>' },
+      { term: '逗号 ,', detail: '<b>逗号 ,</b> 用来<b>分隔</b>列表、元组、字典、函数参数中的不同项目。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">fruits = ["apple", "banana", "cherry"]  # 分隔列表项\nprint("答案:", 42)                       # 分隔函数参数\nx, y = 1, 2                             # 同时给多个变量赋值</pre>' },
+      { term: '引号 \' \"', detail: '<b>引号</b>用来<b>包裹字符串（文字）</b>。<br><br>Python 中单引号 <code>\'...\'</code> 和双引号 <code>"..."</code> 效果一样。三引号 <code>\'\'\'...\'\'\'</code> 可以跨多行。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">name = \'Youcy\'\nmsg = "Hello World"\npoem = \'\'\'这是第一行\n这是第二行\n这是第三行\'\'\'</pre><br><span style="color:#2471a3;">💡 小技巧：</span>字符串里要包含引号时，外面换一种引号：<code>"It\'s nice"</code> 或 <code>\'他说"你好"\'</code>。' }
+    ]
+  }
+];
+
+let notebookTab = 'annotations'; // 'annotations' | 'notes'
+let noteDetailItem = null; // currently expanded note item
+
+function renderNotebook() {
+  const content = document.getElementById('content');
+  document.getElementById('skills-panel').classList.remove('visible');
+  closeDrawer();
+  notebookTab = 'annotations';
+  noteDetailItem = null;
+  renderNotebookContent();
+}
+
+function renderNotebookContent() {
+  const content = document.getElementById('content');
+  let html = `<div class="fade-in"><h2>📓 笔记本</h2>`;
+
+  // Tab bar
+  html += `<div style="display:flex;gap:4px;margin-bottom:16px;">`;
+  html += `<button onclick="switchNotebookTab('annotations')" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:${notebookTab==='annotations'?'var(--accent)':'var(--card-bg)'};color:${notebookTab==='annotations'?'#fff':'var(--text)'};cursor:pointer;font-size:0.85rem;">📝 我的批注</button>`;
+  html += `<button onclick="switchNotebookTab('notes')" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:${notebookTab==='notes'?'var(--accent)':'var(--card-bg)'};color:${notebookTab==='notes'?'#fff':'var(--text)'};cursor:pointer;font-size:0.85rem;">📒 纯笔记</button>`;
+  html += `</div>`;
+
+  if (notebookTab === 'annotations') {
+    html += renderAnnotationsTab();
+  } else {
+    html += renderNotesTab();
+  }
+
+  html += `</div>`;
+  content.innerHTML = html;
+  currentTopicId = null;
+  renderTree();
+  updateAnnoCount();
+}
+
+function switchNotebookTab(tab) {
+  notebookTab = tab;
+  noteDetailItem = null;
+  renderNotebookContent();
+}
+
+// ── Annotations Tab ──
+
+function renderAnnotationsTab() {
+  const allAnns = getAnnotations();
+  const entries = [];
+  for (const [topicId, anns] of Object.entries(allAnns)) {
+    if (!anns || anns.length === 0) continue;
+    let topicName = topicId;
+    for (const branch of KNOWLEDGE_TREE) {
+      for (const leaf of branch.children) {
+        if (leaf.id === topicId) { topicName = leaf.label; break; }
+      }
+      if (topicName !== topicId) break;
+    }
+    for (const ann of anns) {
+      entries.push({ ...ann, topicId, topicName });
+    }
+  }
+  entries.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+  let html = `<p style="color:var(--text-secondary);margin-bottom:16px;">汇总所有知识点上的标注与批注，共 <strong>${entries.length}</strong> 条</p>`;
+
+  if (entries.length === 0) {
+    html += `<div class="empty-state"><div class="big-icon">📝</div><p>还没有任何批注。</p><p>去知识树里选中文字，右键即可添加高亮、样式标注或链接。</p></div>`;
+    return html;
+  }
+
+  const grouped = {};
+  for (const entry of entries) {
+    if (!grouped[entry.topicId]) grouped[entry.topicId] = { topicName: entry.topicName, entries: [] };
+    grouped[entry.topicId].entries.push(entry);
+  }
+
+  for (const [topicId, group] of Object.entries(grouped)) {
+    html += `<div class="card" style="margin-bottom:20px;">
+      <h4 style="margin-bottom:12px;cursor:pointer;color:var(--accent);" onclick="navigateTo('${topicId}');switchMode('knowledge');">📖 ${escapeHtml(group.topicName)} <span style="font-size:0.75rem;color:var(--text-secondary);">（${group.entries.length} 条）</span></h4>`;
+    for (const entry of group.entries) {
+      let quoteStyle = '', typeLabel = '';
+      if (entry.type === 'highlight') {
+        quoteStyle = 'background:var(--highlight-yellow);padding:6px 10px;border-radius:6px;border-left:3px solid var(--highlight-yellow-dark);';
+        typeLabel = '🖍️ 高亮';
+      } else if (entry.type === 'underline') {
+        quoteStyle = 'border-bottom:2px solid var(--underline-color);padding:6px 10px;';
+        typeLabel = '📌 链接';
+      } else if (entry.type === 'style') {
+        const colorName = entry.color ? getColorName(entry.color) : '默认';
+        const styleParts = [colorName !== '默认' ? colorName + '字体' : '', entry.bold ? '加粗' : ''].filter(Boolean);
+        typeLabel = '✏️ ' + (styleParts.length > 0 ? styleParts.join('+') : '样式');
+        if (entry.color) quoteStyle += 'color:' + entry.color + ';';
+        if (entry.bold) quoteStyle += 'font-weight:700;';
+        quoteStyle += 'padding:6px 10px;';
+      }
+      html += `<div style="margin-bottom:12px;padding:8px 10px;background:var(--card-bg);border-radius:8px;border:1px solid var(--border);">
+        <div style="margin-bottom:6px;"><span style="font-size:0.7rem;background:var(--tag-bg);padding:2px 8px;border-radius:10px;">${typeLabel}</span> <span style="font-size:0.72rem;color:var(--text-secondary);">${new Date(entry.createdAt).toLocaleString('zh-CN')}</span></div>
+        <div style="${quoteStyle}font-size:0.88rem;margin-bottom:6px;">${escapeHtml(entry.text)}</div>`;
+      if (entry.note) {
+        html += `<div style="font-size:0.83rem;color:var(--text-secondary);line-height:1.6;padding:4px 6px;">💬 ${entry.note}</div>`;
+      }
+      if (entry.type === 'underline' && (entry.url || entry.description)) {
+        html += `<div style="font-size:0.8rem;color:var(--info);padding:4px 6px;">🔗 ${escapeHtml(entry.url || '')} ${entry.description ? '— ' + escapeHtml(entry.description) : ''}</div>`;
+      }
+      html += `<div style="text-align:right;font-size:0.72rem;margin-top:4px;">
+        <a href="javascript:void(0)" onclick="navigateTo('${topicId}');switchMode('knowledge');" style="color:var(--accent);">跳转到原文 →</a>
+      </div></div>`;
+    }
+    html += `</div>`;
+  }
+  return html;
+}
+
+// ── Notes Tab ──
+
+function renderNotesTab() {
+  // If viewing a detail
+  if (noteDetailItem) {
+    return renderNoteDetail(noteDetailItem.groupIdx, noteDetailItem.itemIdx);
+  }
+
+  let html = `<p style="color:var(--text-secondary);margin-bottom:16px;">Python 语法拆解为 5 个组，点击术语查看详解。</p>`;
+
+  for (let gi = 0; gi < PYTHON_NOTES.length; gi++) {
+    const group = PYTHON_NOTES[gi];
+    html += `<div class="card" style="margin-bottom:16px;">
+      <h4 style="margin-bottom:4px;">${group.icon} ${group.group}</h4>
+      <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:10px;">${group.desc}</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">`;
+    for (let ii = 0; ii < group.items.length; ii++) {
+      const item = group.items[ii];
+      html += `<span class="tag" style="cursor:pointer;font-size:0.82rem;padding:5px 12px;" onclick="openNoteDetail(${gi},${ii})">${escapeHtml(item.term)}</span>`;
+    }
+    html += `</div></div>`;
+  }
+  return html;
+}
+
+function openNoteDetail(groupIdx, itemIdx) {
+  noteDetailItem = { groupIdx, itemIdx };
+  renderNotebookContent();
+}
+
+function closeNoteDetail() {
+  noteDetailItem = null;
+  renderNotebookContent();
+}
+
+function renderNoteDetail(groupIdx, itemIdx) {
+  const group = PYTHON_NOTES[groupIdx];
+  const item = group.items[itemIdx];
+
+  let html = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:0.82rem;color:var(--text-secondary);cursor:pointer;" onclick="closeNoteDetail()">← 返回笔记列表</div>
+      <button onclick="closeNoteDetail()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-secondary);padding:2px 8px;border-radius:4px;" title="关闭">✕</button>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:4px;">${group.icon} ${group.group}</div>
+      <h3 style="margin:0;font-size:1.2rem;">${escapeHtml(item.term)}</h3>
+    </div>
+    <div class="card" style="line-height:1.8;font-size:0.9rem;">
+      ${item.detail}
+    </div>
+  `;
+  return html;
+}
+
+// ======================== MODE SWITCH ========================
+
+function switchMode(mode) {
+  currentMode = mode;
+  closeDrawer();
+  document.querySelectorAll('#mode-tabs button').forEach(b => b.classList.remove('active'));
+  document.getElementById('skills-panel').classList.remove('visible');
+  document.getElementById('content').innerHTML = '';
+
+  if (mode === 'knowledge') {
+    document.querySelector('#mode-tabs button:nth-child(1)').classList.add('active');
+    document.getElementById('content').innerHTML = `
+      <div class="empty-state">
+        <div class="big-icon">🌳</div>
+        <h2>欢迎，Youcy</h2>
+        <p>这是你的 DH 学习知识树。</p>
+        <p>👈 从左边选择一个知识点开始阅读。</p>
+        <p>选中一段文字后<strong>右键</strong>可以：</p>
+        <p>🖍️ <strong>高亮标记</strong> → 点击可添加批注</p>
+        <p>📌 <strong>添加链接/定位</strong> → 关联到电子书/视频的具体位置</p>
+        <p>🎨 <strong>改变字体颜色 / 加粗</strong> → 右键菜单选择样式</p>
+        <p style="margin-top:16px;font-size:0.85rem;">所有进度和批注都会自动保存在浏览器中。</p>
+      </div>`;
+    currentTopicId = null;
+    renderTree();
+    updateLeafActive();
+    updateAnnoCount();
+  } else if (mode === 'skills') {
+    document.querySelector('#mode-tabs button:nth-child(2)').classList.add('active');
+    renderSkills();
+  } else if (mode === 'timeline') {
+    document.querySelector('#mode-tabs button:nth-child(3)').classList.add('active');
+    renderTimeline();
+  } else if (mode === 'notebook') {
+    document.querySelector('#mode-tabs button:nth-child(4)').classList.add('active');
+    renderNotebook();
+  }
+}
+
+// ======================== THEME ========================
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('dh_theme', next);
+}
+
+// ======================== RESET ========================
+
+function resetAllProgress() {
+  if (confirm('确定要重置所有学习进度和批注吗？这个操作不可撤销！')) {
+    localStorage.removeItem('dh_tree_progress');
+    localStorage.removeItem('dh_annotations');
+    closeDrawer();
+    renderTree();
+    if (currentMode === 'skills') renderSkills();
+    if (currentTopicId && currentMode === 'knowledge') navigateTo(currentTopicId);
+    else if (currentMode === 'knowledge') switchMode('knowledge');
+    document.getElementById('last-saved').textContent = '已重置';
+    updateAnnoCount();
+  }
+}
+
+// ======================== TOAST ========================
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._timeout);
+  el._timeout = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ======================== KEYBOARD ========================
+
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('search-box').focus();
+  }
+  if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'F') {
+    e.preventDefault();
+    toggleMiniChat();
+  }
+  if (e.key === 'Escape') {
+    hideContextMenu();
+    closeLinkDialog();
+    closeDrawer();
+    if (mcOpen) toggleMiniChat();
+  }
+});
+
+// ======================== MINI CHAT ========================
+
+let mcOpen = false;
+let chatHistory = []; // [{role:'user'|'assistant', text:'...'}]
+let currentChatTab = 'chat';
+
+function toggleMiniChat() {
+  mcOpen = !mcOpen;
+  const panel = document.getElementById('mc-panel');
+  if (mcOpen) {
+    panel.classList.add('open');
+    if (currentChatTab === 'chat') {
+      document.getElementById('mc-chat-input').focus();
+    } else {
+      document.getElementById('mc-search-input').focus();
+    }
+  } else {
+    panel.classList.remove('open');
+  }
+}
+
+function switchChatTab(tab) {
+  currentChatTab = tab;
+  document.querySelectorAll('#mc-tabs button').forEach(b => b.classList.remove('active'));
+  document.getElementById('mc-chat').classList.remove('active');
+  document.getElementById('mc-search').classList.remove('active');
+
+  if (tab === 'chat') {
+    document.querySelector('#mc-tabs button:nth-child(1)').classList.add('active');
+    document.getElementById('mc-chat').classList.add('active');
+    document.getElementById('mc-chat-input').focus();
+  } else {
+    document.querySelector('#mc-tabs button:nth-child(2)').classList.add('active');
+    document.getElementById('mc-search').classList.add('active');
+    document.getElementById('mc-search-input').focus();
+  }
+}
+
+// ── Chat ──
+
+function sendChatMessage() {
+  const input = document.getElementById('mc-chat-input');
+  const question = input.value.trim();
+  if (!question) return;
+
+  // Add user message
+  addChatBubble('user', question);
+  chatHistory.push({ role: 'user', text: question });
+  input.value = '';
+  document.getElementById('mc-chat-send').disabled = true;
+
+  // Show typing indicator
+  const msgContainer = document.getElementById('mc-messages');
+  const typingEl = document.createElement('div');
+  typingEl.className = 'mc-msg assistant';
+  typingEl.innerHTML = '<div class="mc-typing"><span></span><span></span><span></span></div>';
+  msgContainer.appendChild(typingEl);
+  msgContainer.scrollTop = msgContainer.scrollHeight;
+
+  // Generate answer (with small delay to feel natural)
+  setTimeout(() => {
+    typingEl.remove();
+    const answer = generateAnswer(question);
+    addChatBubble('assistant', answer);
+    chatHistory.push({ role: 'assistant', text: answer });
+    document.getElementById('mc-chat-send').disabled = false;
+  }, 500 + Math.random() * 600);
+}
+
+function addChatBubble(role, text) {
+  const msgContainer = document.getElementById('mc-messages');
+  const div = document.createElement('div');
+  div.className = 'mc-msg ' + role;
+  div.innerHTML = text.replace(/\n/g, '<br>');
+  msgContainer.appendChild(div);
+  msgContainer.scrollTop = msgContainer.scrollHeight;
+}
+
+function generateAnswer(question) {
+  const q = question.toLowerCase();
+
+  // ── Knowledge tree search ──
+  const matches = searchKnowledgeTree(question);
+
+  // ── Pattern-based answers ──
+
+  // PyCharm / Brackets / IDE
+  if (q.includes('pycharm') || q.includes('brackets') || (q.includes('ide') && q.includes('python')) || q.includes('编辑器')) {
+    let ans = '**完全可以。PyCharm 比 Brackets 更适合写 Python。**\n\nBrackets 是 Adobe 出的前端编辑器（HTML/CSS/JS），Python 支持很弱。Python for Everybody 课程用 Brackets 只是因为 Dr. Chuck 觉得它免费且简单，但那是很多年前的选择了。\n\n**PyCharm Community 版完全免费**，对 Python 的支持远好于 Brackets——代码补全、调试、虚拟环境管理、直接运行脚本，都是 Brackets 做不到的。\n\n课程里的 `.py` 文件在 PyCharm 里打开、运行、调试都没问题。你不需要装 Brackets。\n\n如果你觉得 PyCharm 启动慢或者界面太复杂，还有一个更轻量的选择：**VS Code + Python 插件**，也是免费的。';
+    if (matches.length > 0) {
+      ans += '\n\n📎 相关知识：' + matches.slice(0,2).map(m => `<a href="javascript:void(0)" onclick="navigateTo('${m.topicId}');toggleMiniChat()">${m.topicName}</a>`).join(' · ');
+    }
+    return ans;
+  }
+
+  // Python basics
+  if (q.includes('python') && (q.includes('学') || q.includes('开始') || q.includes('入门') || q.includes('怎么'))) {
+    let ans = '学 Python 对 DH 来说，目标不是当程序员，而是**能用代码处理人文学科的数据**。\n\n**建议学习路径：**\n1. 变量 → 条件 → 循环 → 函数（1-2周）\n2. 文件读写 + pandas 表格处理（1周）\n3. 文本处理 + 正则表达式（1周）\n4. 可视化 + API调用（1周）\n\n**免费课程推荐：**\n- [Python for the Humanities](https://www.hermes-hub.de/) — 专为人文学者设计\n- Python for Everybody (Coursera)\n\n**自测标准：** 给你100个txt文件，你能写出脚本找出高频词并画图，就算合格了。';
+    if (matches.length > 0) {
+      ans += '\n\n📎 知识树里有详细内容：' + matches.slice(0,2).map(m => `<a href="javascript:void(0)" onclick="navigateTo('${m.topicId}');toggleMiniChat()">${m.topicName}</a>`).join(' · ');
+    }
+    return ans;
+  }
+
+  // DH / program
+  if (q.includes('数字人文') || q.includes('dh') || q.includes('digital humanities')) {
+    if (q.includes('是什么') || q.includes('定义') || q.includes('意思')) {
+      return '**Digital Humanities（数字人文）** = 用计算工具做人文学问 + 用人文学视角批判计算工具。\n\n不是把书扫描进电脑，而是在问：当文化变成数据后，我们能发现什么之前看不到的东西？\n\n三个层次：\n1. 工具层：用数据库/编程/可视化处理人文材料\n2. 方法层：用建模/编码/网络分析提出新问题\n3. 批判层：审视算法偏见、数字认识论、技术政治';
+    }
+  }
+
+  // Modeling
+  if (q.includes('建模') || q.includes('model')) {
+    return 'DH里的"建模"**不是Blender那种3D建模**。\n\n**数据建模** = 把混沌的历史信息变成计算机能处理的结构化数据。\n\n比如面对一批18世纪婚礼契约，你要决定：\n- 记录哪些字段？（日期、新郎、新娘、证人、财产……）\n- 它们之间什么关系？（新郎→嫁妆→财产清单）\n- 用什么标准编码？（TEI/XML？关系数据库？）\n\n核心洞见（Julia Flanders）：**建模是人文阐释行为**——你选择保留什么、忽略什么，本身就是学术判断。不存在"客观的"数据模型。';
+  }
+
+  // TEI
+  if (q.includes('tei')) {
+    return '**TEI（文本编码倡议）** 是人文学科最通用的XML标准，1987年成立，社区驱动。\n\n它能标注：文档结构（章节/段落）、命名实体（人名/地名/日期）、编辑干预（删除/添加/修改）、元数据（作者/来源/语言）。\n\n入门：teibyexample.org 有交互式教程。\n\n在德累斯顿DH项目中，TEI是数据建模模块的核心内容。';
+  }
+
+  // HCI
+  if (q.includes('人机交互') || q.includes('hci') || q.includes('可用性') || q.includes('usability')) {
+    return '**HCI（人机交互）** 在德累斯顿DH项目里是一个完整的10 LP必修模块。\n\n核心内容：\n- 用户中心设计(UCD)四步：情境分析→需求获取→原型→评估\n- 可用性测试：5个用户能发现85%的问题\n- 无障碍设计(A11y)：WCAG 2.1四原则\n\n免费入门：Educative的Introduction to HCI、Georgia Tech的edX课程。';
+  }
+
+  // GDPR / 法律
+  if (q.includes('gdpr') || q.includes('数据保护') || q.includes('版权') || q.includes('法律')) {
+    return '德累斯顿DH项目有一个**专属法律模块**（DH 1.3，5 LP），这在德国DH项目中非常罕见。\n\n覆盖：版权法（数字化文献的版权状态、Creative Commons许可）、GDPR（知情同意、数据最小化、被遗忘权）、信息法（DSA、EU AI Act）。\n\n所有DH项目——数字展览、档案数字化、用户研究——都必须过法律这一关。';
+  }
+
+  // 学习习惯 / ADHD
+  if (q.includes('adhd') || q.includes('学习习惯') || q.includes('怎么学') || q.includes('专注') || q.includes('焦虑')) {
+    return '关于学习习惯，几个对ADHD友好的建议：\n\n1. **每次只做一件事**，不超过25分钟（番茄钟）\n2. **不要追求"整理完美"**——Notion/Obsidian的认知负荷可能比你学的东西还大\n3. **这个系统就是为你设计的**——打开就能用，不需要整理\n4. **"标记为已掌握"本身就是一种奖赏**——利用ADHD对即时反馈的敏感\n5. 如果某天不想学新东西，切换到"技能清单"模式，**复习旧的**——螺旋上升就是靠这个\n\n你不需要和神经typical的人用同样的学习方法。这个系统是为你建的。';
+  }
+
+  // General: has knowledge tree matches
+  if (matches.length > 0) {
+    let ans = '我在你的知识树里找到了相关内容：\n\n';
+    for (const m of matches.slice(0, 4)) {
+      ans += `- <a href="javascript:void(0)" onclick="navigateTo('${m.topicId}');toggleMiniChat()"><strong>${m.topicName}</strong></a>：${m.snippet.slice(0, 100)}…\n`;
+    }
+    ans += '\n点上面的链接可以跳转到详细页面。如果你还想问更具体的问题，继续打字就好。';
+    return ans;
+  }
+
+  // Fallback
+  return '这个问题在我的本地知识库里没有找到直接匹配的内容。\n\n🔹 试试换个问法？\n🔹 切换到搜索标签，用关键词搜搜看？\n🔹 或者把这个问题拿到 Claude Code / ChatGPT 里追问——那个能联网、能深度推理。\n\n我这里更适合回答关于DH课程、Python入门、学习方法、德累斯顿项目等我们已经梳理过的内容。';
+}
+
+function searchKnowledgeTree(query) {
+  const results = [];
+  const qLower = query.toLowerCase();
+  // Split query into keywords for better matching
+  const keywords = qLower.split(/\s+/).filter(k => k.length > 1);
+
+  for (const branch of KNOWLEDGE_TREE) {
+    for (const leaf of branch.children) {
+      if (!leaf.content) continue;
+      const textContent = leaf.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+      const contentLower = textContent.toLowerCase();
+      const titleLower = leaf.label.toLowerCase();
+
+      // Check if any keyword matches
+      let bestIdx = -1;
+      let matchedKeyword = '';
+      for (const kw of keywords) {
+        const idx = contentLower.indexOf(kw);
+        if (idx !== -1) { bestIdx = idx; matchedKeyword = kw; break; }
+      }
+      const titleMatch = keywords.some(kw => titleLower.includes(kw));
+
+      if (titleMatch || bestIdx !== -1) {
+        let snippet = '';
+        if (bestIdx !== -1) {
+          const start = Math.max(0, bestIdx - 30);
+          const end = Math.min(textContent.length, bestIdx + matchedKeyword.length + 50);
+          snippet = (start > 0 ? '…' : '') + textContent.slice(start, end) + (end < textContent.length ? '…' : '');
+        } else {
+          snippet = textContent.slice(0, 100) + '…';
+        }
+        results.push({ topicId: leaf.id, topicName: leaf.label, snippet: snippet });
+      }
+    }
+  }
+  return results;
+}
+
+// ── Search Tab ──
+
+function doSearchTab() {
+  const query = document.getElementById('mc-search-input').value.trim();
+  if (!query) return;
+  const qLower = query.toLowerCase();
+  const results = [];
+  for (const branch of KNOWLEDGE_TREE) {
+    for (const leaf of branch.children) {
+      if (!leaf.content) continue;
+      const textContent = leaf.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+      const contentLower = textContent.toLowerCase();
+      const idx = contentLower.indexOf(qLower);
+      const titleMatch = leaf.label.toLowerCase().includes(qLower);
+      if (titleMatch || idx !== -1) {
+        let snippet = '';
+        if (idx !== -1) {
+          const start = Math.max(0, idx - 35);
+          const end = Math.min(textContent.length, idx + query.length + 55);
+          snippet = (start > 0 ? '…' : '') + textContent.slice(start, end) + (end < textContent.length ? '…' : '');
+        } else { snippet = textContent.slice(0, 110) + '…'; }
+        const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        snippet = snippet.replace(new RegExp('(' + escaped + ')', 'gi'), '<em>$1</em>');
+        results.push({ topicId: leaf.id, topicName: leaf.label, snippet: snippet });
+      }
+    }
+  }
+  const container = document.getElementById('mc-search-results');
+  const footer = document.getElementById('mc-search-footer');
+  if (results.length === 0) {
+    container.innerHTML = `<div class="mc-empty">🔍 没找到和 "<strong>${escapeHtml(query)}</strong>" 相关的内容</div>`;
+    footer.textContent = '';
+  } else {
+    let html = '';
+    for (const r of results) {
+      html += `<div class="mc-search-item" onclick="navigateTo('${r.topicId}');toggleMiniChat()">
+        <div class="mc-topic">${r.topicName}</div>
+        <div class="mc-snippet">${r.snippet}</div>
+      </div>`;
+    }
+    container.innerHTML = html;
+    footer.textContent = `找到 ${results.length} 个结果`;
+  }
+}
+
+// ── Drag ──
+
+(function setupDrag() {
+  let dragging = false, startX, startY, startLeft, startTop;
+  const handle = document.getElementById('mc-drag-handle');
+  const panel = document.getElementById('mc-panel');
+  handle.addEventListener('mousedown', function(e) {
+    dragging = true; startX = e.clientX; startY = e.clientY;
+    const rect = panel.getBoundingClientRect();
+    startLeft = rect.left; startTop = rect.top;
+    panel.style.transition = 'none'; e.preventDefault();
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    panel.style.right = 'auto';
+    panel.style.top = (startTop + e.clientY - startY) + 'px';
+    panel.style.left = (startLeft + e.clientX - startX) + 'px';
+  });
+  document.addEventListener('mouseup', function() {
+    if (dragging) { dragging = false; panel.style.transition = ''; }
+  });
+})();
+
+// ======================== INIT ========================
+
+function init() {
+  const savedTheme = localStorage.getItem('dh_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  switchMode('knowledge');
+  renderTree();
+
+  // Close drawer on clicking drawer close button
+  document.getElementById('anno-drawer-close').addEventListener('click', closeDrawer);
+}
+
+init();
+</script>
+</body>
+</html>
