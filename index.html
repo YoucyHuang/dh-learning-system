@@ -34,6 +34,10 @@
   #sidebar { width: 340px; min-width: 340px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
   #sidebar-header { padding: 16px 16px 12px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--sidebar-bg); z-index: 10; }
   #sidebar-header h1 { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  #lang-switcher { display: flex; gap: 4px; margin-bottom: 8px; }
+  #lang-switcher button { flex: 1; padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--text-secondary); font-size: 0.72rem; cursor: pointer; transition: var(--transition); font-weight: 600; }
+  #lang-switcher button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #lang-switcher button:hover:not(.active) { background: var(--hover); }
   #search-box { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--card-bg); color: var(--text); font-size: 0.85rem; outline: none; transition: var(--transition); }
   #search-box:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
   #tree-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
@@ -409,18 +413,18 @@
 
 <!-- CONTEXT MENU -->
 <div id="ctx-menu">
-  <div class="ctx-item" data-action="highlight"><span class="ctx-icon">🖍️</span>高亮标记</div>
-  <div class="ctx-item" data-action="underline"><span class="ctx-icon">📌</span>添加链接/定位</div>
+  <div class="ctx-item" data-action="highlight" data-i18n="ctx.highlight">🖍️ 高亮标记</div>
+  <div class="ctx-item" data-action="underline" data-i18n="ctx.underline">📌 添加链接/定位</div>
   <div class="ctx-divider"></div>
-  <div class="ctx-item" data-action="color-red"><span class="ctx-icon">🔴</span>红色字体</div>
-  <div class="ctx-item" data-action="color-blue"><span class="ctx-icon">🔵</span>蓝色字体</div>
-  <div class="ctx-item" data-action="color-green"><span class="ctx-icon">🟢</span>绿色字体</div>
-  <div class="ctx-item" data-action="color-orange"><span class="ctx-icon">🟠</span>橙色字体</div>
-  <div class="ctx-item" data-action="color-purple"><span class="ctx-icon">🟣</span>紫色字体</div>
-  <div class="ctx-item" data-action="bold"><span class="ctx-icon">𝐁</span>加粗 / 取消加粗</div>
-  <div class="ctx-item" data-action="reset-style"><span class="ctx-icon">↩️</span>还原默认样式</div>
+  <div class="ctx-item" data-action="color-red" data-i18n="ctx.red">🔴 红色字体</div>
+  <div class="ctx-item" data-action="color-blue" data-i18n="ctx.blue">🔵 蓝色字体</div>
+  <div class="ctx-item" data-action="color-green" data-i18n="ctx.green">🟢 绿色字体</div>
+  <div class="ctx-item" data-action="color-orange" data-i18n="ctx.orange">🟠 橙色字体</div>
+  <div class="ctx-item" data-action="color-purple" data-i18n="ctx.purple">🟣 紫色字体</div>
+  <div class="ctx-item" data-action="bold" data-i18n="ctx.bold">𝐁 加粗 / 取消加粗</div>
+  <div class="ctx-item" data-action="reset-style" data-i18n="ctx.reset">↩️ 还原默认样式</div>
   <div class="ctx-divider"></div>
-  <div class="ctx-item" data-action="copy"><span class="ctx-icon">📋</span>复制选中文字</div>
+  <div class="ctx-item" data-action="copy" data-i18n="ctx.copy">📋 复制选中文字</div>
 </div>
 
 <!-- NOTE CONTEXT MENU (for annotation note editor) -->
@@ -489,14 +493,19 @@
 <div id="sidebar">
   <div id="sidebar-header">
     <h1>🌳 DH 学习体系</h1>
+    <div id="lang-switcher">
+      <button class="active" onclick="setLanguage('zh')">中文</button>
+      <button onclick="setLanguage('en')">EN</button>
+      <button onclick="setLanguage('de')">DE</button>
+    </div>
     <input type="text" id="search-box" placeholder="🔍 搜索知识点...（Ctrl+K）" oninput="searchTree()">
   </div>
   <div id="tree-nav"></div>
   <div id="mode-tabs">
-    <button class="active" onclick="switchMode('knowledge')">📚 知识树</button>
-    <button onclick="switchMode('skills')">✅ 技能清单</button>
-    <button onclick="switchMode('timeline')">📅 时间线</button>
-    <button onclick="switchMode('notebook')">📓 笔记本</button>
+    <button class="active" onclick="switchMode('knowledge')" data-i18n="tab.knowledge">📚 知识树</button>
+    <button onclick="switchMode('skills')" data-i18n="tab.skills">✅ 技能清单</button>
+    <button onclick="switchMode('timeline')" data-i18n="tab.timeline">📅 时间线</button>
+    <button onclick="switchMode('notebook')" data-i18n="tab.notebook">📓 笔记本</button>
   </div>
 </div>
 
@@ -504,36 +513,36 @@
 <div id="main-wrapper">
   <div id="main" oncontextmenu="return false">
     <div id="top-bar">
-      <button onclick="switchMode('skills')">✅ 技能清单</button>
-      <button onclick="switchMode('timeline')">📅 时间线</button>
-      <button onclick="switchMode('notebook')">📓 笔记本</button>
-      <button onclick="resetAllProgress()">🔄 重置进度</button>
+      <button onclick="switchMode('skills')" data-i18n="topbar.skills">✅ 技能清单</button>
+      <button onclick="switchMode('timeline')" data-i18n="topbar.timeline">📅 时间线</button>
+      <button onclick="switchMode('notebook')" data-i18n="topbar.notebook">📓 笔记本</button>
+      <button onclick="resetAllProgress()" data-i18n="topbar.reset">🔄 重置进度</button>
       <button id="theme-toggle" onclick="toggleTheme()" title="切换深色/浅色模式">🌓</button>
       <span id="anno-count"></span>
       <span style="font-size:0.78rem;color:var(--text-secondary);" id="last-saved"></span>
     </div>
     <div id="content"></div>
     <div id="skills-panel"></div>
-    <div style="padding:12px 0;margin-top:20px;border-top:1px solid var(--border);font-size:0.75rem;color:var(--text-secondary);line-height:1.8;">
-      💡 <strong>右键</strong>选中文字 → 高亮/链接/改色/加粗 · 右上角 <strong>💬</strong> → 对话框提问（Ctrl+Shift+F） · 左下 <strong>📓</strong> → 批注笔记本
+    <div style="padding:12px 0;margin-top:20px;border-top:1px solid var(--border);font-size:0.75rem;color:var(--text-secondary);line-height:1.8;" data-i18n="bottom.tip">
+      💡 右键选中文字 → 高亮/链接/改色/加粗 · 右上角 💬 → 对话框提问（Ctrl+Shift+F） · 左下 📓 → 批注笔记本
     </div>
   </div>
 
   <!-- ANNOTATION DRAWER -->
   <div id="anno-drawer">
     <div id="anno-drawer-header">
-      <span>📝 批注</span>
+      <span data-i18n="drawer.title">📝 批注</span>
       <button id="anno-drawer-close" onclick="closeDrawer()">✕</button>
     </div>
     <div id="anno-drawer-body">
       <div class="empty-drawer">
-        <div class="big-icon">💬</div>
-        <p>选中文字后右键"高亮标记"<br>然后点击高亮区域即可在此写批注</p>
+        <div class="big-icon" data-i18n="drawer.empty.icon">💬</div>
+        <p data-i18n="drawer.empty.text">选中文字后右键"高亮标记"<br>然后点击高亮区域即可在此写批注</p>
       </div>
     </div>
     <div id="anno-drawer-footer" style="display:none;">
-      <button class="danger" onclick="deleteAnnotation()">🗑️ 删除</button>
-      <button class="save-btn" onclick="saveAnnotationNote()">💾 保存批注</button>
+      <button class="danger" onclick="deleteAnnotation()" data-i18n="drawer.delete">🗑️ 删除</button>
+      <button class="save-btn" onclick="saveAnnotationNote()" data-i18n="drawer.save">💾 保存批注</button>
     </div>
   </div>
 </div>
@@ -951,6 +960,186 @@ let currentAnnotationId = null; // which highlight's drawer is open
 let pendingSelection = null; // text selected for context menu
 let pendingSelectionRange = null;
 
+// ======================== I18N ========================
+
+const I18N = {
+  zh: {
+    'search.placeholder': '🔍 搜索知识点...（Ctrl+K）',
+    'tab.knowledge': '📚 知识树', 'tab.skills': '✅ 技能清单', 'tab.timeline': '📅 时间线', 'tab.notebook': '📓 笔记本',
+    'topbar.skills': '✅ 技能清单', 'topbar.timeline': '📅 时间线', 'topbar.notebook': '📓 笔记本', 'topbar.reset': '🔄 重置进度',
+    'theme.toggle': '切换深色/浅色模式',
+    'welcome.title': '欢迎，Youcy', 'welcome.subtitle': '这是你的 DH 学习知识树。',
+    'welcome.tip1': '👈 从左边选择一个知识点开始阅读。',
+    'welcome.tip2': '选中一段文字后右键可以：',
+    'welcome.hl': '🖍️ 高亮标记 → 点击可添加批注',
+    'welcome.link': '📌 添加链接/定位 → 关联到电子书/视频的具体位置',
+    'welcome.color': '🎨 改变字体颜色 / 加粗 → 右键菜单选择样式',
+    'welcome.save': '所有进度和批注都会自动保存在浏览器中。',
+    'ctx.highlight': '🖍️ 高亮标记', 'ctx.underline': '📌 添加链接/定位',
+    'ctx.red': '🔴 红色字体', 'ctx.blue': '🔵 蓝色字体', 'ctx.green': '🟢 绿色字体', 'ctx.orange': '🟠 橙色字体', 'ctx.purple': '🟣 紫色字体',
+    'ctx.bold': '𝐁 加粗 / 取消加粗', 'ctx.reset': '↩️ 还原默认样式', 'ctx.copy': '📋 复制选中文字',
+    'drawer.title': '📝 批注', 'drawer.empty.icon': '💬', 'drawer.empty.text': '选中文字后右键"高亮标记"然后点击高亮区域即可在此写批注',
+    'drawer.save': '💾 保存批注', 'drawer.delete': '🗑️ 删除',
+    'drawer.label': '📝 你的批注（选中文字右键可改颜色/加粗/斜体）',
+    'drawer.placeholder': '在这里写你的批注、想法、问题……',
+    'note.tab.annotations': '📝 我的批注', 'note.tab.notes': '📒 纯笔记',
+    'bottom.tip': '💡 右键选中文字 → 高亮/链接/改色/加粗 · 右上角 💬 → 对话框提问（Ctrl+Shift+F） · 左下 📓 → 批注笔记本',
+    'toast.saved': '💾 批注已保存', 'toast.deleted': '🗑️ 已删除', 'toast.copied': '📋 已复制到剪贴板',
+    'toast.highlighted': '🖍️ 已高亮！点击高亮区域即可添加批注', 'toast.duplicate': '⚠️ 这段文字已经高亮过了',
+    'toast.linkadded': '📌 链接已添加！点击蓝色下划线即可跳转',
+    'confirm.delete': '确定要删除这条标注和批注吗？',
+    'mark.done': '✅ 已掌握（点击取消）', 'mark.undone': '标记为已掌握', 'mark.label': '标记学习状态：',
+  },
+  en: {
+    'search.placeholder': '🔍 Search topics... (Ctrl+K)',
+    'tab.knowledge': '📚 Knowledge', 'tab.skills': '✅ Skills', 'tab.timeline': '📅 Timeline', 'tab.notebook': '📓 Notebook',
+    'topbar.skills': '✅ Skills', 'topbar.timeline': '📅 Timeline', 'topbar.notebook': '📓 Notebook', 'topbar.reset': '🔄 Reset',
+    'theme.toggle': 'Toggle dark/light mode',
+    'welcome.title': 'Welcome, Youcy', 'welcome.subtitle': 'This is your DH learning knowledge tree.',
+    'welcome.tip1': '👈 Pick a topic from the left to start reading.',
+    'welcome.tip2': 'Select text and right-click to:',
+    'welcome.hl': '🖍️ Highlight → click to add a note',
+    'welcome.link': '📌 Add link/reference → connect to a book/video location',
+    'welcome.color': '🎨 Change font color / bold → right-click menu',
+    'welcome.save': 'All progress and notes are auto-saved in your browser.',
+    'ctx.highlight': '🖍️ Highlight', 'ctx.underline': '📌 Add link/reference',
+    'ctx.red': '🔴 Red', 'ctx.blue': '🔵 Blue', 'ctx.green': '🟢 Green', 'ctx.orange': '🟠 Orange', 'ctx.purple': '🟣 Purple',
+    'ctx.bold': '𝐁 Bold / unbold', 'ctx.reset': '↩️ Reset style', 'ctx.copy': '📋 Copy',
+    'drawer.title': '📝 Annotation', 'drawer.empty.icon': '💬', 'drawer.empty.text': 'Select text, right-click "Highlight", then click the highlighted area to add a note here',
+    'drawer.save': '💾 Save', 'drawer.delete': '🗑️ Delete',
+    'drawer.label': '📝 Your note (select text & right-click for color/bold/italic)',
+    'drawer.placeholder': 'Write your note, thoughts, questions here…',
+    'note.tab.annotations': '📝 My Annotations', 'note.tab.notes': '📒 Pure Notes',
+    'bottom.tip': '💡 Right-click selected text → highlight/link/color/bold · Top-right 💬 → chat (Ctrl+Shift+F) · Bottom-left 📓 → notebook',
+    'toast.saved': '💾 Note saved', 'toast.deleted': '🗑️ Deleted', 'toast.copied': '📋 Copied',
+    'toast.highlighted': '🖍️ Highlighted! Click it to add a note', 'toast.duplicate': '⚠️ This text is already highlighted',
+    'toast.linkadded': '📌 Link added! Click the blue underline to open',
+    'confirm.delete': 'Delete this annotation and note?',
+    'mark.done': '✅ Mastered (click to undo)', 'mark.undone': 'Mark as mastered', 'mark.label': 'Learning status:',
+  },
+  de: {
+    'search.placeholder': '🔍 Themen suchen... (Strg+K)',
+    'tab.knowledge': '📚 Wissensbaum', 'tab.skills': '✅ Fähigkeiten', 'tab.timeline': '📅 Zeitleiste', 'tab.notebook': '📓 Notizbuch',
+    'topbar.skills': '✅ Fähigkeiten', 'topbar.timeline': '📅 Zeitleiste', 'topbar.notebook': '📓 Notizbuch', 'topbar.reset': '🔄 Zurücksetzen',
+    'theme.toggle': 'Dunkel/Hell umschalten',
+    'welcome.title': 'Willkommen, Youcy', 'welcome.subtitle': 'Das ist dein DH-Lern-Wissensbaum.',
+    'welcome.tip1': '👈 Wähle links ein Thema, um zu lesen.',
+    'welcome.tip2': 'Text markieren und rechtsklicken, um:',
+    'welcome.hl': '🖍️ Hervorheben → klicken, um Notiz zu schreiben',
+    'welcome.link': '📌 Link/Verweis → mit Buch/Video-Stelle verknüpfen',
+    'welcome.color': '🎨 Schriftfarbe / fett → Rechtsklick-Menü',
+    'welcome.save': 'Alle Fortschritte und Notizen werden automatisch gespeichert.',
+    'ctx.highlight': '🖍️ Hervorheben', 'ctx.underline': '📌 Link/Verweis',
+    'ctx.red': '🔴 Rot', 'ctx.blue': '🔵 Blau', 'ctx.green': '🟢 Grün', 'ctx.orange': '🟠 Orange', 'ctx.purple': '🟣 Lila',
+    'ctx.bold': '𝐁 Fett / normal', 'ctx.reset': '↩️ Format zurücksetzen', 'ctx.copy': '📋 Kopieren',
+    'drawer.title': '📝 Anmerkung', 'drawer.empty.icon': '💬', 'drawer.empty.text': 'Text markieren, "Hervorheben" rechtsklicken, dann auf die Markierung klicken, um hier zu schreiben',
+    'drawer.save': '💾 Speichern', 'drawer.delete': '🗑️ Löschen',
+    'drawer.label': '📝 Deine Notiz (Text markieren & rechtsklicken für Farbe/fett/kursiv)',
+    'drawer.placeholder': 'Schreibe deine Notiz, Gedanken, Fragen hier…',
+    'note.tab.annotations': '📝 Meine Anmerkungen', 'note.tab.notes': '📒 Reine Notizen',
+    'bottom.tip': '💡 Rechtsklick auf markierten Text → Hervorheben/Link/Farbe/Fett · Oben rechts 💬 → Chat (Strg+Umschalt+F) · Unten links 📓 → Notizbuch',
+    'toast.saved': '💾 Notiz gespeichert', 'toast.deleted': '🗑️ Gelöscht', 'toast.copied': '📋 Kopiert',
+    'toast.highlighted': '🖍️ Hervorgehoben! Klicken, um Notiz zu schreiben', 'toast.duplicate': '⚠️ Dieser Text ist bereits markiert',
+    'toast.linkadded': '📌 Link hinzugefügt! Blaue Unterstreichung anklicken',
+    'confirm.delete': 'Diese Anmerkung und Notiz löschen?',
+    'mark.done': '✅ Gelernt (klicken zum Rückgängig)', 'mark.undone': 'Als gelernt markieren', 'mark.label': 'Lernstatus:',
+  }
+};
+
+const TITLE_I18N = {
+  'dh-basics': { zh: '1. 数字人文基础理论', en: '1. DH Fundamentals', de: '1. DH Grundlagen' },
+  'programming': { zh: '2. 编程与计算思维', en: '2. Programming & Computational Thinking', de: '2. Programmieren & Computational Thinking' },
+  'hci': { zh: '3. 人机交互(HCI)', en: '3. Human-Computer Interaction (HCI)', de: '3. Mensch-Computer-Interaktion (HCI)' },
+  'req-test': { zh: '4. 需求与测试管理', en: '4. Requirements & Testing', de: '4. Anforderungen & Testen' },
+  'law-ethics': { zh: '5. 数字法律与伦理', en: '5. Digital Law & Ethics', de: '5. Digitales Recht & Ethik' },
+  'modeling': { zh: '6. 数据建模', en: '6. Data Modeling', de: '6. Datenmodellierung' },
+  'digital-presentation': { zh: '7. 数字化呈现', en: '7. Digital Presentation', de: '7. Digitale Präsentation' },
+  'art-image': { zh: '8. 专业方向：艺术与图像', en: '8. Specialization: Art & Image', de: '8. Spezialisierung: Kunst & Bild' },
+  'academic-skills': { zh: '9. 学术与表达能力', en: '9. Academic & Communication Skills', de: '9. Akademische & Kommunikationsfähigkeiten' },
+  'thesis': { zh: '10. 毕业论文', en: "10. Master's Thesis", de: '10. Masterarbeit' },
+  'dh-what': { zh: '1.1 DH是什么：定义与边界', en: '1.1 What is DH: Definition & Boundaries', de: '1.1 Was ist DH: Definition & Grenzen' },
+  'dh-history': { zh: '1.2 DH发展简史', en: '1.2 A Brief History of DH', de: '1.2 Kurze Geschichte der DH' },
+  'dh-global': { zh: '1.3 全球DH发展现状', en: '1.3 Global DH Today', de: '1.3 DH weltweit heute' },
+  'dh-vs-id': { zh: '1.4 DH与交互设计的关系', en: '1.4 DH & Interaction Design', de: '1.4 DH & Interaction Design' },
+  'dh-future': { zh: '1.5 后数字时代与AI', en: '1.5 Post-Digital Era & AI', de: '1.5 Postdigitales Zeitalter & KI' },
+  'tu-gap': { zh: '1.6 德累斯顿项目的独特定位', en: '1.6 The Unique Position of the Dresden Program', de: '1.6 Die einzigartige Position des Dresden-Programms' },
+  'python-basics': { zh: '2.1 Python基础', en: '2.1 Python Basics', de: '2.1 Python-Grundlagen' },
+  'data-processing': { zh: '2.2 数据处理', en: '2.2 Data Processing', de: '2.2 Datenverarbeitung' },
+  'text-analysis': { zh: '2.3 文本分析(NLP基础)', en: '2.3 Text Analysis (NLP Basics)', de: '2.3 Textanalyse (NLP-Grundlagen)' },
+  'data-viz': { zh: '2.4 数据可视化', en: '2.4 Data Visualization', de: '2.4 Datenvisualisierung' },
+  'git-basics': { zh: '2.5 版本控制(Git)', en: '2.5 Version Control (Git)', de: '2.5 Versionskontrolle (Git)' },
+  'hci-basics': { zh: '3.1 用户中心设计(UCD)', en: '3.1 User-Centered Design (UCD)', de: '3.1 User-Centered Design (UCD)' },
+  'usability': { zh: '3.2 可用性评估', en: '3.2 Usability Evaluation', de: '3.2 Usability-Evaluation' },
+  'accessibility': { zh: '3.3 无障碍设计(A11y)', en: '3.3 Accessibility (A11y)', de: '3.3 Barrierefreiheit (A11y)' },
+  'prototyping': { zh: '3.4 界面原型设计', en: '3.4 Interface Prototyping', de: '3.4 Interface-Prototyping' },
+  'req-analysis': { zh: '4.1 需求获取与分析', en: '4.1 Requirements Elicitation & Analysis', de: '4.1 Anforderungsermittlung & -analyse' },
+  'req-spec': { zh: '4.2 需求规格化', en: '4.2 Requirements Specification', de: '4.2 Anforderungsspezifikation' },
+  'unit-test': { zh: '4.3 单元测试', en: '4.3 Unit Testing', de: '4.3 Unit-Tests' },
+  'system-test': { zh: '4.4 系统与回归测试', en: '4.4 System & Regression Testing', de: '4.4 System- & Regressionstests' },
+  'copyright': { zh: '5.1 版权法基础', en: '5.1 Copyright Law Basics', de: '5.1 Grundlagen des Urheberrechts' },
+  'gdpr': { zh: '5.2 数据保护法(GDPR)', en: '5.2 Data Protection (GDPR)', de: '5.2 Datenschutz (DSGVO)' },
+  'info-law': { zh: '5.3 信息法与数字伦理', en: '5.3 Information Law & Digital Ethics', de: '5.3 Informationsrecht & Digitalethik' },
+  'data-modeling': { zh: '6.1 什么是数据建模(DH语境)', en: '6.1 What is Data Modeling (DH)', de: '6.1 Was ist Datenmodellierung (DH)' },
+  'tei-xml': { zh: '6.2 TEI/XML标准', en: '6.2 TEI/XML Standard', de: '6.2 TEI/XML-Standard' },
+  'ontology': { zh: '6.3 本体论与知识图谱', en: '6.3 Ontologies & Knowledge Graphs', de: '6.3 Ontologien & Wissensgraphen' },
+  'metadata': { zh: '6.4 元数据标准', en: '6.4 Metadata Standards', de: '6.4 Metadatenstandards' },
+  'dig-exhibition': { zh: '7.1 数字展览设计', en: '7.1 Digital Exhibition Design', de: '7.1 Digitale Ausstellungsgestaltung' },
+  'vr-ar': { zh: '7.2 虚拟博物馆/VR/AR', en: '7.2 Virtual Museum / VR / AR', de: '7.2 Virtuelles Museum / VR / AR' },
+  'interactive-narrative': { zh: '7.3 交互式叙事', en: '7.3 Interactive Narrative', de: '7.3 Interaktive Narration' },
+  'info-viz': { zh: '7.4 信息可视化', en: '7.4 Information Visualization', de: '7.4 Informationsvisualisierung' },
+  'aigc': { zh: '7.5 AI生成内容(AIGC)', en: '7.5 AI-Generated Content (AIGC)', de: '7.5 KI-generierte Inhalte (AIGC)' },
+  'digital-art-history': { zh: '8.1 数字艺术史', en: '8.1 Digital Art History', de: '8.1 Digitale Kunstgeschichte' },
+  'visual-culture': { zh: '8.2 视觉文化研究', en: '8.2 Visual Culture Studies', de: '8.2 Visuelle Kulturwissenschaften' },
+  'digital-curation': { zh: '8.3 数字策展', en: '8.3 Digital Curation', de: '8.3 Digitale Kuratierung' },
+  'cultural-heritage': { zh: '8.4 文化遗产数字化', en: '8.4 Cultural Heritage Digitization', de: '8.4 Digitalisierung des Kulturerbes' },
+  'academic-writing': { zh: '9.1 学术写作', en: '9.1 Academic Writing', de: '9.1 Wissenschaftliches Schreiben' },
+  'academic-presentation': { zh: '9.2 学术展示', en: '9.2 Academic Presentation', de: '9.2 Wissenschaftliche Präsentation' },
+  'academic-language': { zh: '9.3 学术英语/德语', en: '9.3 Academic English/German', de: '9.3 Akademisches Englisch/Deutsch' },
+  'interdisciplinary': { zh: '9.4 跨学科沟通', en: '9.4 Interdisciplinary Communication', de: '9.4 Interdisziplinäre Kommunikation' },
+  'thesis-topic': { zh: '10.1 选题方向建议', en: '10.1 Topic Suggestions', de: '10.1 Themenvorschläge' },
+  'thesis-method': { zh: '10.2 研究方法', en: '10.2 Research Methods', de: '10.2 Forschungsmethoden' },
+  'thesis-plan': { zh: '10.3 论文写作计划', en: '10.3 Thesis Writing Plan', de: '10.3 Zeitplan für die Masterarbeit' },
+};
+
+let currentLang = localStorage.getItem('dh_lang') || 'zh';
+
+function t(key) {
+  return (I18N[currentLang] && I18N[currentLang][key]) || I18N.zh[key] || key;
+}
+
+function tt(id) {
+  return (TITLE_I18N[id] && TITLE_I18N[id][currentLang]) || id;
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('dh_lang', lang);
+  applyLanguage();
+}
+
+function applyLanguage() {
+  // Update lang switcher buttons
+  const langMap = { zh: '中文', en: 'EN', de: 'DE' };
+  document.querySelectorAll('#lang-switcher button').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === langMap[currentLang]);
+  });
+  // Update static data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (I18N[currentLang] && I18N[currentLang][key]) el.textContent = I18N[currentLang][key];
+  });
+  // Update search placeholder
+  document.getElementById('search-box').placeholder = t('search.placeholder');
+  // Re-render tree + current view
+  renderTree();
+  if (currentMode === 'knowledge') {
+    if (currentTopicId) navigateTo(currentTopicId);
+    else switchMode('knowledge');
+  } else {
+    switchMode(currentMode);
+  }
+}
+
 // ======================== RENDER TREE ========================
 
 function getProgress() {
@@ -969,19 +1158,21 @@ function renderTree(filter = '') {
     html += `<div class="tree-branch open" data-branch="${branch.id}">`;
     html += `<div class="tree-branch-header" onclick="toggleBranch(this)">
       <span class="arrow">▶</span><span class="icon">${branch.icon}</span>
-      <span class="label">${highlightMatch(branch.label, filter)}</span>
+      <span class="label">${highlightMatch(tt(branch.id), filter)}</span>
       <span style="font-size:0.7rem;color:var(--text-secondary)">${branchDone}/${branchTotal}</span>
     </div>`;
     html += `<div class="tree-children">`;
     for (const leaf of branch.children) {
       const isDone = progress[leaf.id];
       const dotClass = isDone ? 'done' : '';
+      const labelT = tt(leaf.id);
       const match = !filter || leaf.label.toLowerCase().includes(filter.toLowerCase()) ||
+        labelT.toLowerCase().includes(filter.toLowerCase()) ||
         (leaf.content && leaf.content.toLowerCase().includes(filter.toLowerCase()));
       if (filter && !match) continue;
       html += `<div class="tree-leaf${currentTopicId===leaf.id?' active':''}" data-id="${leaf.id}" onclick="navigateTo('${leaf.id}')">
         <span class="status-dot ${dotClass}"></span>
-        <span>${leaf.icon||''} ${highlightMatch(leaf.label, filter)}</span>
+        <span>${leaf.icon||''} ${highlightMatch(labelT, filter)}</span>
         ${isDone ? '<span style="font-size:0.7rem">✅</span>' : ''}
       </div>`;
     }
@@ -1172,7 +1363,7 @@ document.getElementById('ctx-menu').addEventListener('click', function(e) {
     openLinkDialog();
   } else if (action === 'copy') {
     if (pendingSelection) {
-      navigator.clipboard.writeText(pendingSelection).then(() => toast('📋 已复制到剪贴板'));
+      navigator.clipboard.writeText(pendingSelection).then(() => toast(t('toast.copied')));
     }
   } else if (action === 'color-red') {
     addStyleAnnotation('#c0392b', null);
@@ -1260,7 +1451,7 @@ function addHighlight() {
   const anns = getAnnotationsForTopic(currentTopicId);
   // Check duplicate
   if (anns.some(a => a.text === text && a.type === 'highlight')) {
-    toast('⚠️ 这段文字已经高亮过了');
+    toast(t('toast.duplicate'));
     return;
   }
   const ann = {
@@ -1277,7 +1468,7 @@ function addHighlight() {
   navigateTo(currentTopicId);
   // Auto-open the annotation drawer for this new highlight
   setTimeout(() => openAnnotation(currentTopicId, ann.id), 100);
-  toast('🖍️ 已高亮！点击高亮区域即可添加批注');
+  toast(t('toast.highlighted'));
 }
 
 // ======================== STYLE ANNOTATION (color + bold) ========================
@@ -1380,7 +1571,7 @@ function confirmLink() {
   saveAnnotationsForTopic(currentTopicId, anns);
   closeLinkDialog();
   navigateTo(currentTopicId);
-  toast('📌 链接已添加！点击蓝色下划线即可跳转');
+  toast(t('toast.linkadded'));
 }
 
 document.getElementById('link-dialog-overlay').addEventListener('click', function(e) {
@@ -1401,7 +1592,7 @@ function openAnnotation(topicId, annoId) {
 
   body.innerHTML = `
     <div class="anno-quote">${escapeHtml(ann.text)}</div>
-    <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:var(--text-secondary);">📝 你的批注（选中文字右键可改颜色/加粗/斜体）</label>
+    <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:var(--text-secondary);">${t('drawer.label')}</label>
     <div id="note-editor-toolbar">
       <button title="红色" onclick="execNoteCmd('foreColor','#c0392b')"><span style="color:#c0392b;">●</span></button>
       <button title="蓝色" onclick="execNoteCmd('foreColor','#2471a3')"><span style="color:#2471a3;">●</span></button>
@@ -1414,7 +1605,7 @@ function openAnnotation(topicId, annoId) {
       <span class="toolbar-divider"></span>
       <button title="清除格式" onclick="execNoteCmd('removeFormat')" style="font-size:0.7rem;">✕</button>
     </div>
-    <div id="note-editor" contenteditable="true" placeholder="在这里写你的批注、想法、问题……">${ann.note || ''}</div>
+    <div id="note-editor" contenteditable="true" placeholder="${t('drawer.placeholder')}">${ann.note || ''}</div>
     <div class="anno-meta">创建于 ${new Date(ann.createdAt).toLocaleString('zh-CN')}${ann.note ? ' · 有批注' : ' · 暂无批注，点击右侧编辑区添加'}</div>
   `;
   footer.style.display = 'flex';
@@ -1450,19 +1641,19 @@ function saveAnnotationNote() {
       const hasNote = noteHtml && noteHtml !== '<br>' && noteHtml.length > 0;
       metaEl.textContent = `创建于 ${new Date(ann.createdAt).toLocaleString('zh-CN')}${hasNote ? ' · 有批注' : ' · 暂无批注'}`;
     }
-    toast('💾 批注已保存');
+    toast(t('toast.saved'));
   }
 }
 
 function deleteAnnotation() {
   if (!currentTopicId || !currentAnnotationId) return;
-  if (!confirm('确定要删除这条标注和批注吗？')) return;
+  if (!confirm(t('confirm.delete'))) return;
   let anns = getAnnotationsForTopic(currentTopicId);
   anns = anns.filter(a => a.id !== currentAnnotationId);
   saveAnnotationsForTopic(currentTopicId, anns);
   closeDrawer();
   navigateTo(currentTopicId);
-  toast('🗑️ 已删除');
+  toast(t('toast.deleted'));
 }
 
 function closeDrawer() {
@@ -1532,7 +1723,7 @@ function openStyleAnnotation(topicId, annoId) {
   body.innerHTML = `
     <div class="anno-quote">✏️ ${escapeHtml(ann.text)}</div>
     <div class="card"><h4>🎨 当前样式</h4><p>颜色：${colorName} · 粗细：${ann.bold ? '<strong>加粗</strong>' : '常规'}</p></div>
-    <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:var(--text-secondary);">📝 你的批注（选中文字右键可改颜色/加粗/斜体）</label>
+    <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:var(--text-secondary);">${t('drawer.label')}</label>
     <div id="note-editor-toolbar">
       <button title="红色" onclick="execNoteCmd('foreColor','#c0392b')"><span style="color:#c0392b;">●</span></button>
       <button title="蓝色" onclick="execNoteCmd('foreColor','#2471a3')"><span style="color:#2471a3;">●</span></button>
@@ -1545,7 +1736,7 @@ function openStyleAnnotation(topicId, annoId) {
       <span class="toolbar-divider"></span>
       <button title="清除格式" onclick="execNoteCmd('removeFormat')" style="font-size:0.7rem;">✕</button>
     </div>
-    <div id="note-editor" contenteditable="true" placeholder="在这里写你的批注、想法……">${ann.note || ''}</div>
+    <div id="note-editor" contenteditable="true" placeholder="${t('drawer.placeholder')}">${ann.note || ''}</div>
     <div class="anno-meta">创建于 ${new Date(ann.createdAt).toLocaleString('zh-CN')}${ann.note ? ' · 有批注' : ' · 暂无批注'}</div>
   `;
   footer.style.display = 'flex';
@@ -1759,12 +1950,12 @@ function renderNotebook() {
 
 function renderNotebookContent() {
   const content = document.getElementById('content');
-  let html = `<div class="fade-in"><h2>📓 笔记本</h2>`;
+  let html = `<div class="fade-in"><h2>${t('tab.notebook')}</h2>`;
 
   // Tab bar
   html += `<div style="display:flex;gap:4px;margin-bottom:16px;">`;
-  html += `<button onclick="switchNotebookTab('annotations')" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:${notebookTab==='annotations'?'var(--accent)':'var(--card-bg)'};color:${notebookTab==='annotations'?'#fff':'var(--text)'};cursor:pointer;font-size:0.85rem;">📝 我的批注</button>`;
-  html += `<button onclick="switchNotebookTab('notes')" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:${notebookTab==='notes'?'var(--accent)':'var(--card-bg)'};color:${notebookTab==='notes'?'#fff':'var(--text)'};cursor:pointer;font-size:0.85rem;">📒 纯笔记</button>`;
+  html += `<button onclick="switchNotebookTab('annotations')" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:${notebookTab==='annotations'?'var(--accent)':'var(--card-bg)'};color:${notebookTab==='annotations'?'#fff':'var(--text)'};cursor:pointer;font-size:0.85rem;">${t('note.tab.annotations')}</button>`;
+  html += `<button onclick="switchNotebookTab('notes')" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:${notebookTab==='notes'?'var(--accent)':'var(--card-bg)'};color:${notebookTab==='notes'?'#fff':'var(--text)'};cursor:pointer;font-size:0.85rem;">${t('note.tab.notes')}</button>`;
   html += `</div>`;
 
   if (notebookTab === 'annotations') {
@@ -1925,14 +2116,14 @@ function switchMode(mode) {
     document.getElementById('content').innerHTML = `
       <div class="empty-state">
         <div class="big-icon">🌳</div>
-        <h2>欢迎，Youcy</h2>
-        <p>这是你的 DH 学习知识树。</p>
-        <p>👈 从左边选择一个知识点开始阅读。</p>
-        <p>选中一段文字后<strong>右键</strong>可以：</p>
-        <p>🖍️ <strong>高亮标记</strong> → 点击可添加批注</p>
-        <p>📌 <strong>添加链接/定位</strong> → 关联到电子书/视频的具体位置</p>
-        <p>🎨 <strong>改变字体颜色 / 加粗</strong> → 右键菜单选择样式</p>
-        <p style="margin-top:16px;font-size:0.85rem;">所有进度和批注都会自动保存在浏览器中。</p>
+        <h2>${t('welcome.title')}</h2>
+        <p>${t('welcome.subtitle')}</p>
+        <p>${t('welcome.tip1')}</p>
+        <p>${t('welcome.tip2')}</p>
+        <p>${t('welcome.hl')}</p>
+        <p>${t('welcome.link')}</p>
+        <p>${t('welcome.color')}</p>
+        <p style="margin-top:16px;font-size:0.85rem;">${t('welcome.save')}</p>
       </div>`;
     currentTopicId = null;
     renderTree();
@@ -2266,8 +2457,7 @@ function doSearchTab() {
 function init() {
   const savedTheme = localStorage.getItem('dh_theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
-  switchMode('knowledge');
-  renderTree();
+  applyLanguage();
 
   // Close drawer on clicking drawer close button
   document.getElementById('anno-drawer-close').addEventListener('click', closeDrawer);
