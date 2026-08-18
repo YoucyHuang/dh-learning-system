@@ -139,6 +139,8 @@
   /* ── LINK DIALOG ── */
   #link-dialog-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 10000; justify-content: center; align-items: center; }
   #link-dialog-overlay.show { display: flex; }
+  #add-note-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 10000; justify-content: center; align-items: center; }
+  #add-note-overlay.show { display: flex; }
   #link-dialog {
     background: var(--card-bg); border-radius: 12px; padding: 24px;
     width: 440px; max-width: 90vw; box-shadow: 0 16px 48px rgba(0,0,0,0.25);
@@ -453,6 +455,21 @@
     <div class="dialog-btns">
       <button onclick="closeLinkDialog()">取消</button>
       <button class="primary" onclick="confirmLink()">✅ 添加下划线链接</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD NOTE DIALOG (纯笔记 - 新增笔记) -->
+<div id="add-note-overlay">
+  <div id="link-dialog">
+    <h3>📓 新增笔记</h3>
+    <label>📝 标题</label>
+    <input type="text" id="add-note-title" placeholder="如：今天学到的知识点">
+    <label>📄 内容</label>
+    <textarea id="add-note-content" rows="6" placeholder="记录你的笔记、想法、总结……"></textarea>
+    <div class="dialog-btns">
+      <button onclick="closeAddNoteDialog()">取消</button>
+      <button class="primary" onclick="confirmAddNote()">💾 保存笔记</button>
     </div>
   </div>
 </div>
@@ -1578,6 +1595,10 @@ document.getElementById('link-dialog-overlay').addEventListener('click', functio
   if (e.target === this) closeLinkDialog();
 });
 
+document.getElementById('add-note-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAddNoteDialog();
+});
+
 // ======================== ANNOTATION DRAWER ========================
 
 function openAnnotation(topicId, annoId) {
@@ -1933,11 +1954,75 @@ const PYTHON_NOTES = [
       { term: '逗号 ,', detail: '<b>逗号 ,</b> 用来<b>分隔</b>列表、元组、字典、函数参数中的不同项目。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">fruits = ["apple", "banana", "cherry"]  # 分隔列表项\nprint("答案:", 42)                       # 分隔函数参数\nx, y = 1, 2                             # 同时给多个变量赋值</pre>' },
       { term: '引号 \' \"', detail: '<b>引号</b>用来<b>包裹字符串（文字）</b>。<br><br>Python 中单引号 <code>\'...\'</code> 和双引号 <code>"..."</code> 效果一样。三引号 <code>\'\'\'...\'\'\'</code> 可以跨多行。<br><br><pre style="background:var(--tag-bg);padding:8px;border-radius:6px;font-size:0.8rem;">name = \'Youcy\'\nmsg = "Hello World"\npoem = \'\'\'这是第一行\n这是第二行\n这是第三行\'\'\'</pre><br><span style="color:#2471a3;">💡 小技巧：</span>字符串里要包含引号时，外面换一种引号：<code>"It\'s nice"</code> 或 <code>\'他说"你好"\'</code>。' }
     ]
+  },
+  {
+    group: '终端与 Git 武功秘籍',
+    icon: '💻',
+    desc: '控制电脑和"存档"系统的速查表，随时回来查。',
+    items: [
+      { term: '终端是什么', detail: '<b>终端（Terminal）</b>是<b>用打字来命令电脑</b>的地方。<br><br>平时用鼠标点图标叫"图形界面"，终端是另一种方式：打命令 + 按回车，电脑就执行。<br><br><span style="color:#2471a3;">📌 类比：</span>图形界面是"进店点菜"，终端是"直接对后厨喊：一份宫保鸡丁、不要辣"。<br><br>打开方式：Trae 顶部菜单 <b>终端 → 新建终端</b>，或按 <b>Ctrl + `</b>（Esc 下面那个键）。' },
+      { term: '终端导航三件套', detail: '<b>在电脑里"走路"，就靠这三个命令：</b><br><br><table style="width:100%;font-size:0.85rem;border-collapse:collapse;"><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px;font-weight:700">命令</td><td style="padding:6px;font-weight:700">意思</td><td style="padding:6px;font-weight:700">记忆</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px"><code>pwd</code></td><td style="padding:6px">我在哪</td><td style="padding:6px">print working directory</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px"><code>ls</code></td><td style="padding:6px">这里有什么</td><td style="padding:6px">list（注意是小写 L！）</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px"><code>cd ..</code></td><td style="padding:6px">上一层</td><td style="padding:6px"><code>..</code> = 上一级</td></tr><tr><td style="padding:6px"><code>cd 文件夹名</code></td><td style="padding:6px">进入某文件夹</td><td style="padding:6px">change directory</td></tr></table><br><span style="color:#c0392b;">⚠️ 易错：</span><code>ls</code> 第一个字母是小写 L，不是 i 也不是数字 1。' },
+      { term: 'Git 是什么', detail: '<b>Git</b> 是一个<b>给文件做"存档"的工具</b>，像游戏里的"存档点"。<br><br>• 改文件 = 在游戏里操作<br>• <code>git commit</code> = 存一个档<br>• 任何时候都能回到任意存档点<br><br>Git 把存档历史存在隐藏文件夹 <code>.git</code> 里。<br><br><span style="color:#2471a3;">📌 关键区别：</span><code>commit</code> 是在<b>自己电脑</b>存档（别人看不到）；<code>push</code> 是把存档<b>上传到 GitHub 云端</b>（全世界能看到）。' },
+      { term: 'Git 四件套', detail: '<b>改完文件后，依次敲这 4 条命令：</b><br><br><table style="width:100%;font-size:0.85rem;border-collapse:collapse;"><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px;font-weight:700">命令</td><td style="padding:6px;font-weight:700">意思</td><td style="padding:6px;font-weight:700">类比</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px"><code>git status</code></td><td style="padding:6px">看看有什么改动</td><td style="padding:6px">检查有没有没存档的操作</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px"><code>git add -A</code></td><td style="padding:6px">登记所有改动</td><td style="padding:6px">把东西放进存档箱</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px"><code>git commit -m "说明"</code></td><td style="padding:6px">存档</td><td style="padding:6px">按存档按钮 + 起名</td></tr><tr><td style="padding:6px"><code>git push</code></td><td style="padding:6px">上传到 GitHub</td><td style="padding:6px">发到云端备份</td></tr></table><br><span style="color:#2471a3;">💡 口诀：</span>改完 → <code>status</code> 看 → <code>add -A</code> 装 → <code>commit</code> 存 → <code>push</code> 传。' }
+    ]
   }
 ];
 
 let notebookTab = 'annotations'; // 'annotations' | 'notes'
 let noteDetailItem = null; // currently expanded note item
+
+// ======================== CUSTOM NOTES (纯笔记 - 我的笔记) ========================
+
+function getCustomNotes() {
+  try { return JSON.parse(localStorage.getItem('dh_custom_notes') || '[]'); }
+  catch(e) { return []; }
+}
+function saveCustomNotes(notes) {
+  localStorage.setItem('dh_custom_notes', JSON.stringify(notes));
+}
+
+function openAddNoteDialog() {
+  document.getElementById('add-note-title').value = '';
+  document.getElementById('add-note-content').value = '';
+  document.getElementById('add-note-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('add-note-title').focus(), 50);
+}
+
+function closeAddNoteDialog() {
+  document.getElementById('add-note-overlay').classList.remove('show');
+}
+
+function confirmAddNote() {
+  const title = document.getElementById('add-note-title').value.trim();
+  const content = document.getElementById('add-note-content').value.trim();
+  if (!title) {
+    toast('⚠️ 请填写笔记标题');
+    return;
+  }
+  const notes = getCustomNotes();
+  notes.unshift({
+    id: 'note_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    term: title,
+    detail: content.replace(/\n/g, '<br>'),
+    createdAt: Date.now()
+  });
+  saveCustomNotes(notes);
+  closeAddNoteDialog();
+  notebookTab = 'notes';
+  noteDetailItem = null;
+  renderNotebookContent();
+  toast('📓 笔记已保存');
+}
+
+function deleteCustomNote(id) {
+  if (!confirm('确定删除这条笔记吗？')) return;
+  let notes = getCustomNotes();
+  notes = notes.filter(n => n.id !== id);
+  saveCustomNotes(notes);
+  noteDetailItem = null;
+  renderNotebookContent();
+  toast('🗑️ 笔记已删除');
+}
 
 function renderNotebook() {
   const content = document.getElementById('content');
@@ -2052,10 +2137,31 @@ function renderAnnotationsTab() {
 function renderNotesTab() {
   // If viewing a detail
   if (noteDetailItem) {
-    return renderNoteDetail(noteDetailItem.groupIdx, noteDetailItem.itemIdx);
+    return renderNoteDetail(noteDetailItem);
   }
 
-  let html = `<p style="color:var(--text-secondary);margin-bottom:16px;">Python 语法拆解为 5 个组，点击术语查看详解。</p>`;
+  const customNotes = getCustomNotes();
+  let html = '';
+
+  // ── 我的笔记（自定义）──
+  html += `<div class="card" style="margin-bottom:16px;border-left:4px solid var(--success);">
+    <h4 style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+      <span>📌 我的笔记 <span style="font-size:0.75rem;color:var(--text-secondary);">（${customNotes.length} 条）</span></span>
+      <button onclick="openAddNoteDialog()" style="padding:5px 14px;border:1px solid var(--accent);border-radius:16px;background:var(--accent);color:#fff;cursor:pointer;font-size:0.8rem;">＋ 新增笔记</button>
+    </h4>`;
+  if (customNotes.length === 0) {
+    html += `<p style="font-size:0.8rem;color:var(--text-secondary);">还没有自己的笔记，点右上角"＋ 新增笔记"记录第一条吧。</p>`;
+  } else {
+    html += `<div style="display:flex;flex-wrap:wrap;gap:6px;">`;
+    for (const note of customNotes) {
+      html += `<span class="tag" style="cursor:pointer;font-size:0.82rem;padding:5px 12px;" onclick="openCustomNoteDetail('${note.id}')">${escapeHtml(note.term)}</span>`;
+    }
+    html += `</div>`;
+  }
+  html += `</div>`;
+
+  // ── 内置速查笔记 ──
+  html += `<p style="color:var(--text-secondary);margin-bottom:16px;">Python 语法 + 终端/Git 速查，点击术语查看详解。</p>`;
 
   for (let gi = 0; gi < PYTHON_NOTES.length; gi++) {
     const group = PYTHON_NOTES[gi];
@@ -2065,15 +2171,20 @@ function renderNotesTab() {
       <div style="display:flex;flex-wrap:wrap;gap:6px;">`;
     for (let ii = 0; ii < group.items.length; ii++) {
       const item = group.items[ii];
-      html += `<span class="tag" style="cursor:pointer;font-size:0.82rem;padding:5px 12px;" onclick="openNoteDetail(${gi},${ii})">${escapeHtml(item.term)}</span>`;
+      html += `<span class="tag" style="cursor:pointer;font-size:0.82rem;padding:5px 12px;" onclick="openPythonNoteDetail(${gi},${ii})">${escapeHtml(item.term)}</span>`;
     }
     html += `</div></div>`;
   }
   return html;
 }
 
-function openNoteDetail(groupIdx, itemIdx) {
-  noteDetailItem = { groupIdx, itemIdx };
+function openPythonNoteDetail(groupIdx, itemIdx) {
+  noteDetailItem = { type: 'python', groupIdx, itemIdx };
+  renderNotebookContent();
+}
+
+function openCustomNoteDetail(id) {
+  noteDetailItem = { type: 'custom', id };
   renderNotebookContent();
 }
 
@@ -2082,24 +2193,36 @@ function closeNoteDetail() {
   renderNotebookContent();
 }
 
-function renderNoteDetail(groupIdx, itemIdx) {
-  const group = PYTHON_NOTES[groupIdx];
-  const item = group.items[itemIdx];
-
-  let html = `
+function renderNoteDetail(detail) {
+  const backBar = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
       <div style="font-size:0.82rem;color:var(--text-secondary);cursor:pointer;" onclick="closeNoteDetail()">← 返回笔记列表</div>
       <button onclick="closeNoteDetail()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-secondary);padding:2px 8px;border-radius:4px;" title="关闭">✕</button>
-    </div>
+    </div>`;
+
+  if (detail.type === 'custom') {
+    const note = getCustomNotes().find(n => n.id === detail.id);
+    if (!note) { closeNoteDetail(); return ''; }
+    return backBar + `
+      <div class="card" style="margin-bottom:12px;">
+        <div style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:4px;">📌 我的笔记</div>
+        <h3 style="margin:0;font-size:1.2rem;">${escapeHtml(note.term)}</h3>
+        <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:4px;">创建于 ${new Date(note.createdAt).toLocaleString('zh-CN')}</div>
+      </div>
+      <div class="card" style="line-height:1.8;font-size:0.9rem;">${note.detail || '<p style="color:var(--text-secondary);">（无内容）</p>'}</div>
+      <div style="text-align:right;margin-top:8px;">
+        <button onclick="deleteCustomNote('${note.id}')" style="padding:6px 14px;border:1px solid #e0c0c0;border-radius:8px;background:var(--card-bg);color:#c0392b;cursor:pointer;font-size:0.8rem;">🗑️ 删除这条笔记</button>
+      </div>`;
+  }
+
+  const group = PYTHON_NOTES[detail.groupIdx];
+  const item = group.items[detail.itemIdx];
+  return backBar + `
     <div class="card" style="margin-bottom:12px;">
       <div style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:4px;">${group.icon} ${group.group}</div>
       <h3 style="margin:0;font-size:1.2rem;">${escapeHtml(item.term)}</h3>
     </div>
-    <div class="card" style="line-height:1.8;font-size:0.9rem;">
-      ${item.detail}
-    </div>
-  `;
-  return html;
+    <div class="card" style="line-height:1.8;font-size:0.9rem;">${item.detail}</div>`;
 }
 
 // ======================== MODE SWITCH ========================
